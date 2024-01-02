@@ -13,7 +13,7 @@ const pieData = ref(null);
 const polarData = ref(null);
 const barData = ref(null);
 const radarData = ref(null);
-
+const time =ref('')
 const lineOptions = ref(null);
 const pieOptions = ref(null);
 const polarOptions = ref(null);
@@ -234,6 +234,9 @@ watch(
 
 <template>
     <div class="grid p-fluid">
+        <div class="col-12 xl:col-6">
+           <Calendar dateFormat="yy/mm/dd" v-model="time" showIcon showButtonBar />
+        </div>
         <div class="col-12 xl:col-6">
             <div class="card">
                 <h5>Linear Chart</h5>

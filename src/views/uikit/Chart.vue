@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
+import ProductService from '@/service/ProductService';
 
 const { layoutConfig } = useLayout();
 let documentStyle = getComputedStyle(document.documentElement);
@@ -8,17 +9,25 @@ let textColor = documentStyle.getPropertyValue('--text-color');
 let textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
 let surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
+const onLineNumber = ref(0);
 const lineData = ref(null);
 const pieData = ref(null);
 const polarData = ref(null);
 const barData = ref(null);
 const radarData = ref(null);
-const time =ref('')
+const time = ref('');
 const lineOptions = ref(null);
 const pieOptions = ref(null);
 const polarOptions = ref(null);
 const barOptions = ref(null);
 const radarOptions = ref(null);
+const productService = new ProductService();
+
+onMounted(() => {
+    productService.getOnlineUsers().then((res) => {
+        onLineNumber.value = res;
+    });
+});
 
 const setColorOptions = () => {
     documentStyle = getComputedStyle(document.documentElement);
@@ -234,8 +243,81 @@ watch(
 
 <template>
     <div class="grid p-fluid">
-        <div class="col-12 xl:col-6">
-           <Calendar dateFormat="yy/mm/dd" v-model="time" showIcon showButtonBar />
+        <div class="col-12 xl:col-8">
+            <div class="flex flex-wrap gap-2">
+                <Button type="button" class="google">
+                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                        <i className="pi pi-calendar-times"></i>
+                    </span>
+                    <span className="px-3 py-2 flex align-items-center text-white">最近一天</span>
+                </Button>
+                <Button type="button" class="google">
+                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                        <i className="pi pi-calendar-times"></i>
+                    </span>
+                    <span className="px-3 py-2 flex align-items-center text-white">最近三天</span>
+                </Button>
+                <Button type="button" class="google">
+                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                        <i className="pi pi-calendar-times"></i>
+                    </span>
+                    <span className="px-3 py-2 flex align-items-center text-white">最近一周</span>
+                </Button>
+                <Button type="button" class="google">
+                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                        <i className="pi pi-calendar-times"></i>
+                    </span>
+                    <span className="px-3 py-2 flex align-items-center text-white">最近一月</span>
+                </Button>
+            </div>
+        </div>
+        <div class="col-12 xl:col-4">
+            <Calendar dateFormat="yy/mm/dd" v-model="time" showIcon showButtonBar />
+        </div>
+        <div class="col-12 xl:col-4">
+            <div class="card mb-0">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3">新增用户</span>
+                        <div class="text-900 font-medium text-xl">152</div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                        <i class="pi pi-user-plus text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+                <span class="text-green-500 font-medium">24 new </span>
+                <span class="text-500">since last visit</span>
+            </div>
+        </div>
+        <div class="col-12 xl:col-4">
+            <div class="card mb-0">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3">充值数</span>
+                        <div class="text-900 font-medium text-xl">12390.3</div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                        <i class="pi pi-bitcoin text-orange-500 text-xl"></i>
+                    </div>
+                </div>
+                <span class="text-green-500 font-medium">%52+ </span>
+                <span class="text-500">since last week</span>
+            </div>
+        </div>
+        <div class="col-12 xl:col-4">
+            <div class="card mb-0">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3">当前在线人数</span>
+                        <div class="text-900 font-medium text-xl">{{ onLineNumber }}</div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                        <i class="pi pi-verified text-cyan-500 text-xl"></i>
+                    </div>
+                </div>
+                <span class="text-green-500 font-medium">520 </span>
+                <span class="text-500">newly registered</span>
+            </div>
         </div>
         <div class="col-12 xl:col-6">
             <div class="card">
@@ -275,3 +357,26 @@ watch(
         </div>
     </div>
 </template>
+<style lang="scss" scoped>
+.google {
+    background: linear-gradient(to left, var(--purple-600) 50%, var(--purple-700) 50%);
+    background-size: 200% 100%;
+    background-position: right bottom;
+    transition: background-position 0.5s ease-out;
+    border-color: var(--purple-700);
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+
+    &:enabled:hover {
+        background: linear-gradient(to left, var(--purple-600) 50%, var(--purple-700) 50%);
+        background-size: 200% 100%;
+        background-position: left bottom;
+        border-color: var(--purple-700);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 1px var(--purple-400);
+    }
+}
+</style>

@@ -99,9 +99,8 @@ import TreeSelect from 'primevue/treeselect';
 import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
-
 import BlockViewer from '@/components/BlockViewer.vue';
-
+import moment from "moment";
 import '@/assets/styles.scss';
 
 const app = createApp(App);
@@ -278,6 +277,8 @@ app.use(PrimeVue, {
     }
 }
 });
+app.config.globalProperties.$moment = moment;
+
 app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);

@@ -244,27 +244,27 @@ watch(
 <template>
     <div class="grid p-fluid">
         <div class="col-12 xl:col-8">
-            <div class="flex flex-wrap gap-2">
-                <Button type="button" class="google">
-                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+            <div class="flex gap-2">
+                <Button type="button" class="btn-cus">
+                    <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
                         <i className="pi pi-calendar-times"></i>
                     </span>
                     <span className="px-3 py-2 flex align-items-center text-white">最近一天</span>
                 </Button>
-                <Button type="button" class="google">
-                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                <Button type="button" class="btn-cus">
+                    <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
                         <i className="pi pi-calendar-times"></i>
                     </span>
                     <span className="px-3 py-2 flex align-items-center text-white">最近三天</span>
                 </Button>
-                <Button type="button" class="google">
-                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                <Button type="button" class="btn-cus">
+                    <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
                         <i className="pi pi-calendar-times"></i>
                     </span>
                     <span className="px-3 py-2 flex align-items-center text-white">最近一周</span>
                 </Button>
-                <Button type="button" class="google">
-                    <span class="flex align-items-center px-2 bg-purple-700 text-white">
+                <Button type="button" class="btn-cus">
+                    <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
                         <i className="pi pi-calendar-times"></i>
                     </span>
                     <span className="px-3 py-2 flex align-items-center text-white">最近一月</span>
@@ -321,62 +321,62 @@ watch(
         </div>
         <div class="col-12 xl:col-6">
             <div class="card">
-                <h5>Linear Chart</h5>
+                <h5>新增用户</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions"></Chart>
             </div>
         </div>
         <div class="col-12 xl:col-6">
             <div class="card">
-                <h5>Bar Chart</h5>
+                <h5>充值数据</h5>
+                <Chart type="line" :data="lineData" :options="lineOptions"></Chart>
+            </div>
+        </div>
+
+        <div class="col-12 xl:col-6">
+            <div class="card">
+                <h5>各平台数据统计</h5>
                 <Chart type="bar" :data="barData" :options="barOptions"></Chart>
-            </div>
-        </div>
-        <div class="col-12 xl:col-6">
-            <div class="card flex flex-column align-items-center">
-                <h5 class="text-left w-full">Pie Chart</h5>
-                <Chart type="pie" :data="pieData" :options="pieOptions"></Chart>
-            </div>
-        </div>
-        <div class="col-12 xl:col-6">
-            <div class="card flex flex-column align-items-center">
-                <h5 class="text-left w-full">Doughnut Chart</h5>
-                <Chart type="doughnut" :data="pieData" :options="pieOptions"></Chart>
-            </div>
-        </div>
-        <div class="col-12 xl:col-6">
-            <div class="card flex flex-column align-items-center">
-                <h5 class="text-left w-full">Polar Area Chart</h5>
-                <Chart type="polarArea" :data="polarData" :options="polarOptions"></Chart>
-            </div>
-        </div>
-        <div class="col-12 xl:col-6">
-            <div class="card flex flex-column align-items-center">
-                <h5 class="text-left w-full">Radar Chart</h5>
-                <Chart type="radar" :data="radarData" :options="radarOptions"></Chart>
             </div>
         </div>
     </div>
 </template>
 <style lang="scss" scoped>
-.google {
-    background: linear-gradient(to left, var(--purple-600) 50%, var(--purple-700) 50%);
+.btn-cus {
+    background: linear-gradient(to left, var(--bluegray-700) 50%, var(--bluegray-800) 50%);
     background-size: 200% 100%;
     background-position: right bottom;
     transition: background-position 0.5s ease-out;
-    border-color: var(--purple-700);
+    border-color: var(--bluegray-800);
+    padding: 0;
     display: flex;
     align-items: stretch;
-    padding: 0;
 
     &:enabled:hover {
-        background: linear-gradient(to left, var(--purple-600) 50%, var(--purple-700) 50%);
+        background: linear-gradient(to left, var(--bluegray-700) 50%, var(--bluegray-800) 50%);
         background-size: 200% 100%;
         background-position: left bottom;
-        border-color: var(--purple-700);
+        border-color: var(--bluegray-800);
     }
 
     &:focus {
-        box-shadow: 0 0 0 1px var(--purple-400);
+        box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #7478f0, 0 1px 2px 0 black;
     }
+}
+.template-button .p-button.discord {
+    background: linear-gradient(to left, var(--bluegray-700) 50%, var(--bluegray-800) 50%);
+    background-size: 200% 100%;
+    background-position: right bottom;
+    transition: background-position 0.5s ease-out;
+    color: #fff;
+    border-color: var(--bluegray-800);
+}
+.template-button .p-button.discord:hover {
+    background-position: left bottom;
+}
+.template-button .p-button.discord i {
+    background-color: var(--bluegray-800);
+}
+.template-button .p-button.discord:focus {
+    box-shadow: 0 0 0 1px var(--bluegray-500);
 }
 </style>

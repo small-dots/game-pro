@@ -68,4 +68,35 @@ export default class ProductService {
         .then((res) => res.json())
         .then((d) => d.data);;
     }
+
+    /**
+     * 当日新增用户
+     */
+    getNewUser() {
+        return fetch('http://192.168.1.106:8102/api/tj/today/added')
+            .then((res) => res.json())
+            .then((d) => d.data);
+    }
+
+    /**
+     * 当日充值数据
+     */
+    getNewAmount() {
+        return fetch('http://192.168.1.106:8102/api/tj/today/amount')
+            .then((res) => res.json())
+            .then((d) => d.data);
+    }
+     /**
+     * 历史数据统计
+     */
+     getHistoryData(query) {
+        const queryParams = Object.keys(query)
+        .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
+        .join('&');
+        return fetch('http://192.168.1.106:8102/api/tj/period?'+queryParams)
+            .then((res) => res.json())
+            .then((d) => d.data);
+    }
+
+    
 }

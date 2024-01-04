@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, onBeforeUnmount ,getCurrentInstance} from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import ProductService from '@/service/ProductService';
-
+const {proxy} = getCurrentInstance()
 const { layoutConfig } = useLayout();
 let documentStyle = getComputedStyle(document.documentElement);
 let textColor = documentStyle.getPropertyValue('--text-color');
@@ -10,23 +10,48 @@ let textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary'
 let surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
 const onLineNumber = ref(0);
-const lineData = ref(null);
-const pieData = ref(null);
-const polarData = ref(null);
-const barData = ref(null);
-const radarData = ref(null);
-const time = ref('');
-const lineOptions = ref(null);
-const pieOptions = ref(null);
-const polarOptions = ref(null);
-const barOptions = ref(null);
-const radarOptions = ref(null);
-const productService = new ProductService();
+const newUserNumber = ref(0);
+const newAmountNumber = ref(0);
+const lineDataUser = ref(null);
+const lineDataMoney = ref(null);
 
+const userData = ref([]);
+const moneyData = ref([]);
+const xData =ref([])
+
+const barData = ref(null);
+const time = ref('');
+const lineOptionsUser = ref(null);
+const lineOptionsMoney = ref(null);
+const barOptions = ref(null);
+const productService = new ProductService();
+const timer = ref(null);
 onMounted(() => {
-    productService.getOnlineUsers().then((res) => {
-        onLineNumber.value = res;
-    });
+    /**
+     * 获取统计数据,每个十分钟轮询一次
+     */
+    timer.value = setInterval(() => {
+        getStatisticsData();
+    }, 1000 * 60 * 10);
+
+    getStatisticsData();
+
+    productService
+        .getHistoryData({
+            kssj: '2024-01-01',
+            jssj: '2024-02-10'
+        })
+        .then((res) => {
+            if (Array.isArray(res)) {
+                res.map((item) => {
+                    xData.value.push(proxy.$moment(item.rq).format("YYYY-MM-DD"));
+                    userData.value.push(item.userCount||0);
+                    moneyData.value.push(item.money||0);
+                });
+
+                console.log(userData.value,moneyData.value,xData.value)
+            }
+        });
 
     productService.getMenuData().then((res) => {
         console.log(res);
@@ -50,6 +75,20 @@ onMounted(() => {
     });
 });
 
+onBeforeUnmount(() => {
+    clearInterval(timer.value);
+});
+const getStatisticsData = async () => {
+    productService.getOnlineUsers().then((res) => {
+        onLineNumber.value = res || '0';
+    });
+    productService.getNewUser().then((res) => {
+        newUserNumber.value = res || '0';
+    });
+    productService.getNewAmount().then((res) => {
+        newAmountNumber.value = res || '0';
+    });
+};
 const setColorOptions = () => {
     documentStyle = getComputedStyle(document.documentElement);
     textColor = documentStyle.getPropertyValue('--text-color');
@@ -62,15 +101,27 @@ const setChart = () => {
         labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
         datasets: [
             {
-                label: 'My First dataset',
-                backgroundColor: documentStyle.getPropertyValue('--primary-500'),
-                borderColor: documentStyle.getPropertyValue('--primary-500'),
+                label: 'TAP',
+                backgroundColor: 'rgba(99, 102 ,241,0.5)',
+                borderColor: documentStyle.getPropertyValue('--indigo-500'),
+                borderRadius: 3,
+                borderWidth: 1,
                 data: [65, 59, 80, 81, 56, 55, 40]
             },
             {
-                label: 'My Second dataset',
-                backgroundColor: documentStyle.getPropertyValue('--primary-200'),
-                borderColor: documentStyle.getPropertyValue('--primary-200'),
+                label: '微信小程序',
+                backgroundColor: 'rgba(20 ,184, 166,0.5)',
+                borderColor: documentStyle.getPropertyValue('--teal-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: [28, 48, 40, 19, 86, 27, 90]
+            },
+            {
+                label: '信息流',
+                backgroundColor: 'rgba(249, 115 ,22,0.5)',
+                borderColor: documentStyle.getPropertyValue('--orange-500'),
+                borderRadius: 3,
+                borderWidth: 1,
                 data: [28, 48, 40, 19, 86, 27, 90]
             }
         ]
@@ -108,51 +159,21 @@ const setChart = () => {
         }
     };
 
-    pieData.value = {
-        labels: ['A', 'B', 'C'],
+    lineDataUser.value = {
+        labels: xData.value,
         datasets: [
             {
-                data: [540, 325, 702],
-                backgroundColor: [documentStyle.getPropertyValue('--indigo-500'), documentStyle.getPropertyValue('--purple-500'), documentStyle.getPropertyValue('--teal-500')],
-                hoverBackgroundColor: [documentStyle.getPropertyValue('--indigo-400'), documentStyle.getPropertyValue('--purple-400'), documentStyle.getPropertyValue('--teal-400')]
-            }
-        ]
-    };
-
-    pieOptions.value = {
-        plugins: {
-            legend: {
-                labels: {
-                    usePointStyle: true,
-                    color: textColor
-                }
-            }
-        }
-    };
-
-    lineData.value = {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-        datasets: [
-            {
-                label: 'First Dataset',
-                data: [65, 59, 80, 81, 56, 55, 40],
-                fill: false,
-                backgroundColor: documentStyle.getPropertyValue('--primary-500'),
-                borderColor: documentStyle.getPropertyValue('--primary-500'),
-                tension: 0.4
-            },
-            {
-                label: 'Second Dataset',
-                data: [28, 48, 40, 19, 86, 27, 90],
-                fill: false,
-                backgroundColor: documentStyle.getPropertyValue('--primary-200'),
-                borderColor: documentStyle.getPropertyValue('--primary-200'),
+                label: '历史新增用户数量',
+                data: userData.value,
+                fill: true,
+                backgroundColor: 'rgba(20 ,184, 166,0.2)',
+                borderColor: documentStyle.getPropertyValue('--teal-500'),
                 tension: 0.4
             }
         ]
     };
 
-    lineOptions.value = {
+    lineOptionsUser.value = {
         plugins: {
             legend: {
                 labels: {
@@ -181,60 +202,21 @@ const setChart = () => {
             }
         }
     };
-
-    polarData.value = {
+    lineDataMoney.value = {
+        labels: xData.value,
         datasets: [
             {
-                data: [11, 16, 7, 3],
-                backgroundColor: [documentStyle.getPropertyValue('--indigo-500'), documentStyle.getPropertyValue('--purple-500'), documentStyle.getPropertyValue('--teal-500'), documentStyle.getPropertyValue('--orange-500')],
-                label: 'My dataset'
-            }
-        ],
-        labels: ['Indigo', 'Purple', 'Teal', 'Orange']
-    };
-
-    polarOptions.value = {
-        plugins: {
-            legend: {
-                labels: {
-                    color: textColor
-                }
-            }
-        },
-        scales: {
-            r: {
-                grid: {
-                    color: surfaceBorder
-                }
-            }
-        }
-    };
-
-    radarData.value = {
-        labels: ['Eating', 'Drinking', 'Sleeping', 'Designing', 'Coding', 'Cycling', 'Running'],
-        datasets: [
-            {
-                label: 'My First dataset',
-                borderColor: documentStyle.getPropertyValue('--indigo-400'),
-                pointBackgroundColor: documentStyle.getPropertyValue('--indigo-400'),
-                pointBorderColor: documentStyle.getPropertyValue('--indigo-400'),
-                pointHoverBackgroundColor: textColor,
-                pointHoverBorderColor: documentStyle.getPropertyValue('--indigo-400'),
-                data: [65, 59, 90, 81, 56, 55, 40]
-            },
-            {
-                label: 'My Second dataset',
-                borderColor: documentStyle.getPropertyValue('--purple-400'),
-                pointBackgroundColor: documentStyle.getPropertyValue('--purple-400'),
-                pointBorderColor: documentStyle.getPropertyValue('--purple-400'),
-                pointHoverBackgroundColor: textColor,
-                pointHoverBorderColor: documentStyle.getPropertyValue('--purple-400'),
-                data: [28, 48, 40, 19, 96, 27, 100]
+                label: '历史充值数量',
+                data: moneyData.value,
+                fill: true,
+                backgroundColor: 'rgba(249, 115 ,22,0.2)',
+                borderColor: documentStyle.getPropertyValue('--orange-500'),
+                tension: 0.4
             }
         ]
     };
 
-    radarOptions.value = {
+    lineOptionsMoney.value = {
         plugins: {
             legend: {
                 labels: {
@@ -243,9 +225,22 @@ const setChart = () => {
             }
         },
         scales: {
-            r: {
-                grid: {
+            x: {
+                ticks: {
                     color: textColorSecondary
+                },
+                grid: {
+                    color: surfaceBorder,
+                    drawBorder: false
+                }
+            },
+            y: {
+                ticks: {
+                    color: textColorSecondary
+                },
+                grid: {
+                    color: surfaceBorder,
+                    drawBorder: false
                 }
             }
         }
@@ -300,14 +295,14 @@ watch(
                 <div class="flex justify-content-between mb-3">
                     <div>
                         <span class="block text-500 font-medium mb-3">新增用户</span>
-                        <div class="text-900 font-medium text-xl">152</div>
+                        <div class="text-900 font-medium text-xl">{{ newUserNumber }} <span class="text-500 text-sm">人</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-user-plus text-blue-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-green-500 font-medium">24 new </span>
-                <span class="text-500">since last visit</span>
+                <!-- <span class="text-green-500 font-medium">24 new </span>
+                <span class="text-500">since last visit</span> -->
             </div>
         </div>
         <div class="col-12 xl:col-4">
@@ -315,14 +310,14 @@ watch(
                 <div class="flex justify-content-between mb-3">
                     <div>
                         <span class="block text-500 font-medium mb-3">充值数</span>
-                        <div class="text-900 font-medium text-xl">12390.3</div>
+                        <div class="text-900 font-medium text-xl">{{ newAmountNumber }} <span class="text-500 text-sm">元</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-bitcoin text-orange-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-green-500 font-medium">%52+ </span>
-                <span class="text-500">since last week</span>
+                <!-- <span class="text-green-500 font-medium">%52+ </span>
+                <span class="text-500">since last week</span> -->
             </div>
         </div>
         <div class="col-12 xl:col-4">
@@ -330,26 +325,26 @@ watch(
                 <div class="flex justify-content-between mb-3">
                     <div>
                         <span class="block text-500 font-medium mb-3">当前在线人数</span>
-                        <div class="text-900 font-medium text-xl">{{ onLineNumber }}</div>
+                        <div class="text-900 font-medium text-xl">{{ onLineNumber }} <span class="text-500 text-sm">人</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-verified text-cyan-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-green-500 font-medium">520 </span>
-                <span class="text-500">newly registered</span>
+                <!-- <span class="text-green-500 font-medium">520 </span>
+                <span class="text-500">newly registered</span> -->
             </div>
         </div>
         <div class="col-12 xl:col-6">
             <div class="card">
                 <h5>新增用户</h5>
-                <Chart type="line" :data="lineData" :options="lineOptions"></Chart>
+                <Chart type="line" :data="lineDataUser" :options="lineOptionsUser"></Chart>
             </div>
         </div>
         <div class="col-12 xl:col-6">
             <div class="card">
                 <h5>充值数据</h5>
-                <Chart type="line" :data="lineData" :options="lineOptions"></Chart>
+                <Chart type="line" :data="lineDataMoney" :options="lineOptionsMoney"></Chart>
             </div>
         </div>
 
@@ -362,6 +357,250 @@ watch(
     </div>
 </template>
 <style lang="scss" scoped>
+.grid {
+    .col-12 {
+        .flex {
+            .btn-cus {
+                .flex {
+                    i {
+                    }
+                }
+                .align-items-center {
+                }
+                .px-2 {
+                }
+                .bg-bluegray-800 {
+                }
+                .text-white {
+                }
+                span {
+                }
+            }
+            .btn-cus {
+                .flex {
+                    i {
+                    }
+                }
+                .align-items-center {
+                }
+                .px-2 {
+                }
+                .bg-bluegray-800 {
+                }
+                .text-white {
+                }
+                span {
+                }
+            }
+            .btn-cus {
+                .flex {
+                    i {
+                    }
+                }
+                .align-items-center {
+                }
+                .px-2 {
+                }
+                .bg-bluegray-800 {
+                }
+                .text-white {
+                }
+                span {
+                }
+            }
+            .btn-cus {
+                .flex {
+                    i {
+                    }
+                }
+                .align-items-center {
+                }
+                .px-2 {
+                }
+                .bg-bluegray-800 {
+                }
+                .text-white {
+                }
+                span {
+                }
+            }
+        }
+        .gap-2 {
+        }
+    }
+    .xl:col-8 {
+    }
+    .col-12 {
+    }
+    .xl:col-4 {
+    }
+    .col-12 {
+        .card {
+            .flex {
+                div {
+                    .block {
+                    }
+                    .text-500 {
+                    }
+                    .font-medium {
+                    }
+                    .mb-3 {
+                    }
+                    .text-900 {
+                        .text-500 {
+                        }
+                        .text-sm {
+                        }
+                    }
+                    .text-xl {
+                    }
+                }
+                .flex {
+                    .pi {
+                    }
+                    .pi-user-plus {
+                    }
+                    .text-blue-500 {
+                    }
+                    .text-xl {
+                    }
+                }
+                .align-items-center {
+                }
+                .justify-content-center {
+                }
+                .bg-blue-100 {
+                }
+                .border-round {
+                }
+            }
+            .justify-content-between {
+            }
+            .mb-3 {
+            }
+        }
+        .mb-0 {
+        }
+    }
+    .col-12 {
+        .card {
+            .flex {
+                div {
+                    .block {
+                    }
+                    .text-500 {
+                    }
+                    .font-medium {
+                    }
+                    .mb-3 {
+                    }
+                    .text-900 {
+                        .text-500 {
+                        }
+                        .text-sm {
+                        }
+                    }
+                    .text-xl {
+                    }
+                }
+                .flex {
+                    .pi {
+                    }
+                    .pi-bitcoin {
+                    }
+                    .text-orange-500 {
+                    }
+                    .text-xl {
+                    }
+                }
+                .align-items-center {
+                }
+                .justify-content-center {
+                }
+                .bg-orange-100 {
+                }
+                .border-round {
+                }
+            }
+            .justify-content-between {
+            }
+            .mb-3 {
+            }
+        }
+        .mb-0 {
+        }
+    }
+    .col-12 {
+        .card {
+            .flex {
+                div {
+                    .block {
+                    }
+                    .text-500 {
+                    }
+                    .font-medium {
+                    }
+                    .mb-3 {
+                    }
+                    .text-900 {
+                        .text-500 {
+                        }
+                        .text-sm {
+                        }
+                    }
+                    .text-xl {
+                    }
+                }
+                .flex {
+                    .pi {
+                    }
+                    .pi-verified {
+                    }
+                    .text-cyan-500 {
+                    }
+                    .text-xl {
+                    }
+                }
+                .align-items-center {
+                }
+                .justify-content-center {
+                }
+                .bg-cyan-100 {
+                }
+                .border-round {
+                }
+            }
+            .justify-content-between {
+            }
+            .mb-3 {
+            }
+        }
+        .mb-0 {
+        }
+    }
+    .col-12 {
+        .card {
+            h5 {
+            }
+        }
+    }
+    .xl:col-6 {
+    }
+    .col-12 {
+        .card {
+            h5 {
+            }
+        }
+    }
+    .col-12 {
+        .card {
+            h5 {
+            }
+        }
+    }
+}
+.p-fluid {
+}
 .btn-cus {
     background: linear-gradient(to left, var(--bluegray-700) 50%, var(--bluegray-800) 50%);
     background-size: 200% 100%;

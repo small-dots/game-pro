@@ -260,7 +260,7 @@ watch(
 <template>
     <div class="grid p-fluid">
         <div class="col-12 xl:col-8">
-            <div class="flex gap-2">
+            <div class="flex gap-2" style="flex-warp:warp">
                 <Button type="button" class="btn-cus">
                     <span class="flex align-items-center px-2 bg-bluegray-800 text-white">
                         <i className="pi pi-calendar-times"></i>
@@ -290,7 +290,7 @@ watch(
         <div class="col-12 xl:col-4">
             <Calendar dateFormat="yy/mm/dd" v-model="time" showIcon showButtonBar />
         </div>
-        <div class="col-12 xl:col-4">
+        <div class="col-12 xl:col-2-5">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
@@ -305,7 +305,7 @@ watch(
                 <span class="text-500">since last visit</span> -->
             </div>
         </div>
-        <div class="col-12 xl:col-4">
+        <div class="col-12 xl:col-2-5">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
@@ -320,7 +320,7 @@ watch(
                 <span class="text-500">since last week</span> -->
             </div>
         </div>
-        <div class="col-12 xl:col-4">
+        <div class="col-12 xl:col-2-5">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
@@ -333,6 +333,36 @@ watch(
                 </div>
                 <!-- <span class="text-green-500 font-medium">520 </span>
                 <span class="text-500">newly registered</span> -->
+            </div>
+        </div>
+        <div class="col-12 xl:col-2-5">
+            <div class="card mb-0">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3">充值数</span>
+                        <div class="text-900 font-medium text-xl">{{ newAmountNumber }} <span class="text-500 text-sm">元</span></div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                        <i class="pi pi-bitcoin text-orange-500 text-xl"></i>
+                    </div>
+                </div>
+                <!-- <span class="text-green-500 font-medium">%52+ </span>
+                <span class="text-500">since last week</span> -->
+            </div>
+        </div>
+        <div class="col-12 xl:col-2-5">
+            <div class="card mb-0">
+                <div class="flex justify-content-between mb-3">
+                    <div>
+                        <span class="block text-500 font-medium mb-3">充值数</span>
+                        <div class="text-900 font-medium text-xl">{{ newAmountNumber }} <span class="text-500 text-sm">元</span></div>
+                    </div>
+                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                        <i class="pi pi-bitcoin text-orange-500 text-xl"></i>
+                    </div>
+                </div>
+                <!-- <span class="text-green-500 font-medium">%52+ </span>
+                <span class="text-500">since last week</span> -->
             </div>
         </div>
         <div class="col-12 xl:col-6">
@@ -357,250 +387,7 @@ watch(
     </div>
 </template>
 <style lang="scss" scoped>
-.grid {
-    .col-12 {
-        .flex {
-            .btn-cus {
-                .flex {
-                    i {
-                    }
-                }
-                .align-items-center {
-                }
-                .px-2 {
-                }
-                .bg-bluegray-800 {
-                }
-                .text-white {
-                }
-                span {
-                }
-            }
-            .btn-cus {
-                .flex {
-                    i {
-                    }
-                }
-                .align-items-center {
-                }
-                .px-2 {
-                }
-                .bg-bluegray-800 {
-                }
-                .text-white {
-                }
-                span {
-                }
-            }
-            .btn-cus {
-                .flex {
-                    i {
-                    }
-                }
-                .align-items-center {
-                }
-                .px-2 {
-                }
-                .bg-bluegray-800 {
-                }
-                .text-white {
-                }
-                span {
-                }
-            }
-            .btn-cus {
-                .flex {
-                    i {
-                    }
-                }
-                .align-items-center {
-                }
-                .px-2 {
-                }
-                .bg-bluegray-800 {
-                }
-                .text-white {
-                }
-                span {
-                }
-            }
-        }
-        .gap-2 {
-        }
-    }
-    .xl:col-8 {
-    }
-    .col-12 {
-    }
-    .xl:col-4 {
-    }
-    .col-12 {
-        .card {
-            .flex {
-                div {
-                    .block {
-                    }
-                    .text-500 {
-                    }
-                    .font-medium {
-                    }
-                    .mb-3 {
-                    }
-                    .text-900 {
-                        .text-500 {
-                        }
-                        .text-sm {
-                        }
-                    }
-                    .text-xl {
-                    }
-                }
-                .flex {
-                    .pi {
-                    }
-                    .pi-user-plus {
-                    }
-                    .text-blue-500 {
-                    }
-                    .text-xl {
-                    }
-                }
-                .align-items-center {
-                }
-                .justify-content-center {
-                }
-                .bg-blue-100 {
-                }
-                .border-round {
-                }
-            }
-            .justify-content-between {
-            }
-            .mb-3 {
-            }
-        }
-        .mb-0 {
-        }
-    }
-    .col-12 {
-        .card {
-            .flex {
-                div {
-                    .block {
-                    }
-                    .text-500 {
-                    }
-                    .font-medium {
-                    }
-                    .mb-3 {
-                    }
-                    .text-900 {
-                        .text-500 {
-                        }
-                        .text-sm {
-                        }
-                    }
-                    .text-xl {
-                    }
-                }
-                .flex {
-                    .pi {
-                    }
-                    .pi-bitcoin {
-                    }
-                    .text-orange-500 {
-                    }
-                    .text-xl {
-                    }
-                }
-                .align-items-center {
-                }
-                .justify-content-center {
-                }
-                .bg-orange-100 {
-                }
-                .border-round {
-                }
-            }
-            .justify-content-between {
-            }
-            .mb-3 {
-            }
-        }
-        .mb-0 {
-        }
-    }
-    .col-12 {
-        .card {
-            .flex {
-                div {
-                    .block {
-                    }
-                    .text-500 {
-                    }
-                    .font-medium {
-                    }
-                    .mb-3 {
-                    }
-                    .text-900 {
-                        .text-500 {
-                        }
-                        .text-sm {
-                        }
-                    }
-                    .text-xl {
-                    }
-                }
-                .flex {
-                    .pi {
-                    }
-                    .pi-verified {
-                    }
-                    .text-cyan-500 {
-                    }
-                    .text-xl {
-                    }
-                }
-                .align-items-center {
-                }
-                .justify-content-center {
-                }
-                .bg-cyan-100 {
-                }
-                .border-round {
-                }
-            }
-            .justify-content-between {
-            }
-            .mb-3 {
-            }
-        }
-        .mb-0 {
-        }
-    }
-    .col-12 {
-        .card {
-            h5 {
-            }
-        }
-    }
-    .xl:col-6 {
-    }
-    .col-12 {
-        .card {
-            h5 {
-            }
-        }
-    }
-    .col-12 {
-        .card {
-            h5 {
-            }
-        }
-    }
-}
-.p-fluid {
-}
+
 .btn-cus {
     background: linear-gradient(to left, var(--bluegray-700) 50%, var(--bluegray-800) 50%);
     background-size: 200% 100%;
@@ -638,5 +425,19 @@ watch(
 }
 .template-button .p-button.discord:focus {
     box-shadow: 0 0 0 1px var(--bluegray-500);
+}
+@media screen and (min-width: 1200px){
+.xl\:col-2-5 {
+    flex: 0 0 auto;
+    padding: 1rem;
+    width: 20%;
+}
+}
+@media screen and (min-width: 1200px){
+.xl\:col-2-5 {
+    flex: 0 0 auto;
+    padding: 1rem;
+    width: 20%;
+}
 }
 </style>

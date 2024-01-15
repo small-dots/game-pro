@@ -74,7 +74,25 @@ const isOutsideClicked = (event) => {
         <button class="p-link layout-topbar-menu-button layout-topbar-button" @click="onTopBarMenuButton()">
             <i class="pi pi-ellipsis-v"></i>
         </button>
+        <div class="layout-topbar-menu" :class="topbarMenuClasses">
+            <button class="p-link layout-topbar-button actived">
+                <span>游戏1</span>
+            </button>
+            <button class="p-link layout-topbar-button">
+                <span>游戏2</span>
+            </button>
+            <button class="p-link layout-topbar-button">
+                <span>游戏3</span>
+            </button>
+        </div>
     </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.actived {
+    outline: 0 none;
+    outline-offset: 0;
+    transition: box-shadow 0.2s;
+    box-shadow: var(--focus-ring);
+}
+</style>

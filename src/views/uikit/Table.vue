@@ -42,7 +42,7 @@ const openModal = () => {
 };
 
 const initTableData = (query) => {
-    productService.getNoticeList({ bt: noticeTitle.value || '' }, { pageSize: 5, current: 1 }).then((data) => {
+    productService.getNoticeList({ bt: noticeTitle.value || '' }, { pageSize: 9999, current: 1 }).then((data) => {
         msgList.value = data.records
         total.value = Number(data.total)
     });

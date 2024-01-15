@@ -1,121 +1,109 @@
 <script setup>
-import { ref } from 'vue';
+import { reactive, ref, getCurrentInstance } from 'vue';
+import ProductService from '@/service/ProductService';
+import { useToast } from 'primevue/usetoast';
 
-const dropdownItems = ref([
-    { name: 'Option 1', code: 'Option 1' },
-    { name: 'Option 2', code: 'Option 2' },
-    { name: 'Option 3', code: 'Option 3' }
+const productService = new ProductService();
+const { proxy } = getCurrentInstance();
+
+const toast = useToast();
+const rangeOptions = ref(['全服', '指定用户']);
+const selectedjl = ref();
+const jl = ref([
+    { name: 'New York', code: 'NY' },
+    { name: 'Rome', code: 'RM' },
+    { name: 'London', code: 'LDN' },
+    { name: 'Istanbul', code: 'IST' },
+    { name: 'Paris', code: 'PRS' }
 ]);
-
-const dropdownItem = ref(null);
+const range = ref('全服');
+const formData = reactive({
+    selectedjl: '',
+    userId: '',
+    content: '',
+    bt: '',
+    xxnr: '',
+    gqsj: ''
+});
+const send = () => {
+    if(!formData.userId&&range.value=='指定用户'){
+        toast.add({ severity: 'error', summary: '提示', detail: '用户ID必输', group: 'tl', life: 3000 });
+        return
+    }
+    if (!formData.bt) {
+        toast.add({ severity: 'error', summary: '提示', detail: '邮件标题必输', group: 'tl', life: 3000 });
+        return
+    }
+    if (!formData.xxnr) {
+        toast.add({ severity: 'error', summary: '提示', detail: '邮件内容必输', group: 'tl', life: 3000 });
+        return
+    }
+    if (!formData.gqsj) {
+        toast.add({ severity: 'error', summary: '提示', detail: '过期时间必输', group: 'tl', life: 3000 });
+        return
+    }
+    
+    const params = {
+        userId: range == '全服' ? '' : formData.userId,
+        bt: formData.bt,
+        xxnr: formData.xxnr,
+        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD'),
+        jl1: formData?.selectedjl[0]?.code || '',
+        jl2: formData?.selectedjl[1]?.code || '',
+        jl3: formData?.selectedjl[2]?.code || '',
+        jl4: formData?.selectedjl[3]?.code || '',
+        jl5: formData?.selectedjl[4]?.code || ''
+    };
+    productService.sendEmail(params).then((res) => {
+        if (res == 0) {
+            toast.add({ severity: 'success', summary: '提示', detail: '发送成功', group: 'tl', life: 3000 });
+            // 重置表单
+            formData.userId = '';
+            formData.bt = '';
+            formData.xxnr = '';
+            formData.gqsj = '';
+            formData.selectedjl = [];
+            
+            
+        } else {
+            toast.add({ severity: 'error', summary: '提示', detail: '发送失败', group: 'tl', life: 3000 });
+        }
+    });
+};
 </script>
 
 <template>
     <div class="grid">
-        <div class="col-12 md:col-6">
+        <div class="col-12 md:col-12">
             <div class="card p-fluid">
-                <h5>Vertical</h5>
+                <h5>邮件发送</h5>
                 <div class="field">
-                    <label for="name1">Name</label>
-                    <InputText id="name1" type="text" />
+                    <label for="name1">发送对象</label>
+                    <SelectButton v-model="range" :options="rangeOptions" aria-labelledby="basic" />
+                </div>
+                <div class="field" v-if="range == '指定用户'">
+                    <label for="name1">用户ID</label>
+                    <InputText id="name1" v-model="formData.userId" type="text" />
                 </div>
                 <div class="field">
-                    <label for="email1">Email</label>
-                    <InputText id="email1" type="text" />
+                    <label for="name1">邮件标题</label>
+                    <InputText id="name1" v-model="formData.bt" type="text" />
                 </div>
                 <div class="field">
-                    <label for="age1">Age</label>
-                    <InputText id="age1" type="text" />
+                    <label for="email1">过期日期</label>
+                    <Calendar dateFormat="yy/mm/dd" v-model="formData.gqsj" showIcon />
                 </div>
-            </div>
-
-            <div class="card p-fluid">
-                <h5>Vertical Grid</h5>
-                <div class="formgrid grid">
-                    <div class="field col">
-                        <label for="name2">Name</label>
-                        <InputText id="name2" type="text" />
-                    </div>
-                    <div class="field col">
-                        <label for="email2">Email</label>
-                        <InputText id="email2" type="text" />
-                    </div>
+                <div class="field">
+                    <label for="email1">奖励</label>
+                    <MultiSelect v-model="formData.selectedjl" display="chip" :options="jl" optionLabel="name" placeholder="请选择奖励" :maxSelectedLabels="5" class="w-full" />
                 </div>
+                <div class="field">
+                    <label for="age1">邮件内容</label>
+                    <Textarea v-model="formData.xxnr" rows="5" cols="30" />
+                </div>
+                <Button label="发送" @click="send"></Button>
             </div>
         </div>
-
-        <div class="col-12 md:col-6">
-            <div class="card p-fluid">
-                <h5>Horizontal</h5>
-                <div class="field grid">
-                    <label for="name3" class="col-12 mb-2 md:col-2 md:mb-0">Name</label>
-                    <div class="col-12 md:col-10">
-                        <InputText id="name3" type="text" />
-                    </div>
-                </div>
-                <div class="field grid">
-                    <label for="email3" class="col-12 mb-2 md:col-2 md:mb-0">Email</label>
-                    <div class="col-12 md:col-10">
-                        <InputText id="email3" type="text" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h5>Inline</h5>
-                <div class="formgroup-inline">
-                    <div class="field">
-                        <label for="firstname1" class="p-sr-only">Firstname</label>
-                        <InputText id="firstname1" type="text" placeholder="Firstname" />
-                    </div>
-                    <div class="field">
-                        <label for="lastname1" class="p-sr-only">Lastname</label>
-                        <InputText id="lastname1" type="text" placeholder="Lastname" />
-                    </div>
-                    <Button label="Submit"></Button>
-                </div>
-            </div>
-
-            <div class="card">
-                <h5>Help Text</h5>
-                <div class="field p-fluid">
-                    <label for="username">Username</label>
-                    <InputText id="username" type="text" />
-                    <small>Enter your username to reset your password.</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card">
-                <h5>Advanced</h5>
-                <div class="p-fluid formgrid grid">
-                    <div class="field col-12 md:col-6">
-                        <label for="firstname2">Firstname</label>
-                        <InputText id="firstname2" type="text" />
-                    </div>
-                    <div class="field col-12 md:col-6">
-                        <label for="lastname2">Lastname</label>
-                        <InputText id="lastname2" type="text" />
-                    </div>
-                    <div class="field col-12">
-                        <label for="address">Address</label>
-                        <Textarea id="address" rows="4" />
-                    </div>
-                    <div class="field col-12 md:col-6">
-                        <label for="city">City</label>
-                        <InputText id="city" type="text" />
-                    </div>
-                    <div class="field col-12 md:col-3">
-                        <label for="state">State</label>
-                        <Dropdown id="state" v-model="dropdownItem" :options="dropdownItems" optionLabel="name" placeholder="Select One"></Dropdown>
-                    </div>
-                    <div class="field col-12 md:col-3">
-                        <label for="zip">Zip</label>
-                        <InputText id="zip" type="text" />
-                    </div>
-                </div>
-            </div>
-        </div>
+        <Toast position="top-center" group="tl" />
     </div>
 </template>

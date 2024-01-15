@@ -19,17 +19,20 @@ const model = ref([
                 icon: 'pi pi-fw pi-volume-down',
                 to: '/uikit/table'
             },
-            {
-                label: '外挂检测',
-                icon: 'pi pi-fw pi-bolt'
-            },
+            // {
+            //     label: '外挂检测',
+            //     icon: 'pi pi-fw pi-bolt',
+            //      to: '/uikit/table'
+            // },
             {
                 label: 'CDK',
-                icon: 'pi pi-fw pi-gift'
+                icon: 'pi pi-fw pi-gift',
+                 to: '/uikit/cdk'
             },
             {
                 label: '邮件发送',
-                icon: 'pi pi-fw pi-send'
+                icon: 'pi pi-fw pi-send',
+                 to: '/uikit/formlayout'
             }
         ]
     },

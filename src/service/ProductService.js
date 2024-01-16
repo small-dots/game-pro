@@ -163,4 +163,16 @@ export default class ProductService {
             .then((res) => res.json())
             .then((d) => d.code);
     }
+
+    /**
+     * 获取奖励配置
+     */
+    getRewardConfig(data) {
+        const queryParams = Object.keys(data)
+        .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
+        .join('&');
+        return fetch('http://192.168.1.106:8102/api/xtpz/select?'+queryParams)
+        .then((res) => res.json())
+        .then((d) => d.data);
+    }
 }

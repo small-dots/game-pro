@@ -10,20 +10,28 @@ const toast = useToast();
 const msgList = ref(null);
 const addModal = ref(false);
 const noticeTitle = ref();
+const djpz = ref([]);
+const flag = ref(1);
 const productService = new ProductService();
-const jl = ref([
-    { name: 'New York', code: 'NY' },
-    { name: 'Rome', code: 'RM' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Paris', code: 'PRS' }
-]);
+const items = ref([]);
 const modalinfo = reactive({
     gqsj: '',
     cdk: '',
     bt: '',
     selectedjl: [],
-    type: '2'
+    type: '2',
+    jl1: '',
+    jl2: '',
+    jl3: '',
+    jl4: '',
+    jl5: ''
+});
+const num = reactive({
+    n1: 0,
+    n2: 0,
+    n3: 0,
+    n4: 0,
+    n5: 0
 });
 const total = ref(0);
 
@@ -44,23 +52,36 @@ const del = (row) => {
 const submit = () => {
     if (modalinfo.gqsj && modalinfo.cdk) {
         const params = {
-            jl1: modalinfo?.selectedjl[0]?.code || '',
-            jl2: modalinfo?.selectedjl[1]?.code || '',
-            jl3: modalinfo?.selectedjl[2]?.code || '',
-            jl4: modalinfo?.selectedjl[3]?.code || '',
-            jl5: modalinfo?.selectedjl[4]?.code || '',
+            jl1: modalinfo.jl1.name ? modalinfo.jl1.name + '*' + num.n1 : '',
+            jl2: modalinfo.jl2.name ? modalinfo.jl2.name + '*' + num.n2 : '',
+            jl3: modalinfo.jl3.name ? modalinfo.jl3.name + '*' + num.n3 : '',
+            jl4: modalinfo.jl4.name ? modalinfo.jl4.name + '*' + num.n4 : '',
+            jl5: modalinfo.jl5.name ? modalinfo.jl5.name + '*' + num.n5 : '',
             cdk: modalinfo.cdk,
-            gqsj: modalinfo.gqsj
+            gqsj: proxy.$moment(modalinfo.gqsj).format('YYYY-MM-DD')
         };
-        productService.postNotice(params).then((res) => {
-            if (res == 0) {
-                toast.add({ severity: 'success', summary: '提示', detail: '发布成功', group: 'tl', life: 3000 });
-                addModal.value = false;
-                initTableData();
-            } else {
-                toast.add({ severity: 'error', summary: '提示', detail: '发布失败', group: 'tl', life: 3000 });
-            }
-        });
+        if (flag.value == 1) {
+            productService.addCDK(params).then((res) => {
+                if (res == 0) {
+                    toast.add({ severity: 'success', summary: '提示', detail: '发布成功', group: 'tl', life: 3000 });
+                    addModal.value = false;
+                    initTableData();
+                } else {
+                    toast.add({ severity: 'error', summary: '提示', detail: '发布失败', group: 'tl', life: 3000 });
+                }
+            });
+        }
+        if (flag.value == 2) {
+            productService.updateCDK(params).then((res) => {
+                if (res == 0) {
+                    toast.add({ severity: 'success', summary: '提示', detail: '编辑成功', group: 'tl', life: 3000 });
+                    addModal.value = false;
+                    initTableData();
+                } else {
+                    toast.add({ severity: 'error', summary: '提示', detail: '编辑失败', group: 'tl', life: 3000 });
+                }
+            });
+        }
     } else {
         toast.add({ severity: 'error', summary: '提示', detail: '请填写全部的表单项', group: 'tl', life: 3000 });
     }
@@ -70,19 +91,26 @@ const reset = () => {
     noticeTitle.value = '';
 };
 
+const search = (event) => {
+    items.value = djpz.value.filter((item) => {
+        return item.nameZn.toLowerCase().includes(event.query.toLowerCase());
+    });
+};
 const openModal = () => {
     addModal.value = true;
+    flag.value = 1;
 };
 
 const edit = (rowData) => {
+    flag.value = 2;
     addModal.value = true;
     modalinfo.cdk = rowData.cdk;
     modalinfo.gqsj = proxy.$moment(rowData.gqsj).format('YYYY-MM-DD');
-    modalinfo.selectedjl.push(rowData.jl1);
-    modalinfo.selectedjl.push(rowData.jl2);
-    modalinfo.selectedjl.push(rowData.jl3);
-    modalinfo.selectedjl.push(rowData.jl4);
-    modalinfo.selectedjl.push(rowData.jl5);
+    modalinfo.jl1=rowData.jl1;
+    modalinfo.jl2=rowData.jl2;
+    modalinfo.jl3=rowData.jl3;
+    modalinfo.jl4=rowData.jl4;
+    modalinfo.jl5=rowData.jl5;
 };
 const initTableData = (query) => {
     productService.getCDK({ cdk: noticeTitle.value || '' }, { pageSize: 9999, current: 1 }).then((data) => {
@@ -92,6 +120,10 @@ const initTableData = (query) => {
 };
 onBeforeMount(() => {
     initTableData();
+    productService.getRewardConfig({ xtpz: 'djpz' }).then((res) => {
+        console.log(res);
+        djpz.value = JSON.parse(res.pzz);
+    });
 });
 </script>
 
@@ -114,7 +146,7 @@ onBeforeMount(() => {
                 <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" scrollHeight="400px" scrollDirection="both" class="mt-3">
                     <template #header>
                         <div class="flex justify-content-between">
-                            <Button type="button" severity="success" icon="pi pi-plus" label="新增"  @click="openModal" />
+                            <Button type="button" severity="success" icon="pi pi-plus" label="新增" @click="openModal" />
                         </div>
                     </template>
                     <Column field="cdk" header="CDK" :style="{ width: '300px' }" frozen></Column>
@@ -130,7 +162,7 @@ onBeforeMount(() => {
                     </Column>
                     <Column field="cz" header="操作" :style="{ width: '210px' }">
                         <template #body="{ data }">
-                            <Button label="编辑" @click="edit(data)" outlined />
+                            <!-- <Button label="编辑" @click="edit(data)" outlined /> -->
                             <span style="margin: 0 4px"></span>
                             <Button label="删除" severity="danger" @click="del(data)" outlined />
                         </template>
@@ -139,7 +171,7 @@ onBeforeMount(() => {
             </div>
         </div>
     </div>
-    <Dialog v-model:visible="addModal" modal header="添加CDK" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <Dialog v-model:visible="addModal" modal header="CDK" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
         <div class="p-fluid formgrid grid">
             <div class="field col-12">
                 <label for="firstname2">CDK</label>
@@ -150,8 +182,39 @@ onBeforeMount(() => {
                 <Calendar dateFormat="yy/mm/dd" v-model="modalinfo.gqsj" showIcon showButtonBar />
             </div>
             <div class="field col-12">
-                <label for="address">奖励</label>
-                <MultiSelect v-model="modalinfo.selectedjl" display="chip" :options="jl" optionLabel="name" placeholder="请选择奖励" :maxSelectedLabels="5" class="w-full" />
+                <label for="address">奖励1</label>
+                <div class="flex-row">
+                    <AutoComplete v-model="modalinfo.jl1" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                    <InputNumber inputId="stacked-buttons" v-model="num.n1" showButtons mode="decimal" :min="0" />
+                </div>
+            </div>
+            <div class="field col-12">
+                <label for="address">奖励2</label>
+                <div class="flex-row">
+                    <AutoComplete v-model="modalinfo.jl2" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                    <InputNumber inputId="stacked-buttons" v-model="num.n2" showButtons mode="decimal" :min="0" />
+                </div>
+            </div>
+            <div class="field col-12">
+                <label for="address">奖励3</label>
+                <div class="flex-row">
+                    <AutoComplete v-model="modalinfo.jl3" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                    <InputNumber inputId="stacked-buttons" v-model="num.n3" showButtons mode="decimal" :min="0" />
+                </div>
+            </div>
+            <div class="field col-12">
+                <label for="address">奖励4</label>
+                <div class="flex-row">
+                    <AutoComplete v-model="modalinfo.jl4" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                    <InputNumber inputId="stacked-buttons" v-model="num.n4" showButtons mode="decimal" :min="0" />
+                </div>
+            </div>
+            <div class="field col-12">
+                <label for="address">奖励5</label>
+                <div class="flex-row">
+                    <AutoComplete v-model="modalinfo.jl5" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                    <InputNumber inputId="stacked-buttons" v-model="num.n5" showButtons mode="decimal" :min="0" />
+                </div>
             </div>
         </div>
         <template #footer>
@@ -169,5 +232,16 @@ onBeforeMount(() => {
 
 ::v-deep(.p-datatable-scrollable .p-frozen-column) {
     font-weight: bold;
+}
+.flex-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    & > div {
+        flex: 1;
+    }
+    & > span {
+        width: 150px;
+    }
 }
 </style>

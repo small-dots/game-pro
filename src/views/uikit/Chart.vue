@@ -12,6 +12,9 @@ let surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 const onLineNumber = ref(0);
 const newUserNumber = ref(0);
 const newAmountNumber = ref(0);
+const totalUserNumber = ref(0);
+const totalAmountNumber = ref(0);
+
 const lineDataUser = ref(null);
 const lineDataMoney = ref(null);
 
@@ -114,13 +117,16 @@ onBeforeUnmount(() => {
 });
 const getStatisticsData = async () => {
     productService.getOnlineUsers().then((res) => {
-        onLineNumber.value = res || '0';
+        onLineNumber.value = res.login || '0';
+                totalUserNumber.value = res.all|| '0'
+
     });
     productService.getNewUser().then((res) => {
         newUserNumber.value = res || '0';
     });
     productService.getNewAmount().then((res) => {
-        newAmountNumber.value = res || '0';
+        newAmountNumber.value = res.today || '0';
+        totalAmountNumber.value = res.all || '0';
     });
 };
 const setColorOptions = () => {
@@ -328,7 +334,7 @@ watch(
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">新增用户</span>
+                        <span class="block text-500 font-medium mb-3">今日新增用户</span>
                         <div class="text-900 font-medium text-xl">{{ newUserNumber }} <span class="text-500 text-sm">人</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
@@ -344,7 +350,7 @@ watch(
                 <div class="flex justify-content-between mb-3">
                     <div>
                         <span class="block text-500 font-medium mb-3">用户总量</span>
-                        <div class="text-900 font-medium text-xl">{{ newUserNumber }} <span class="text-500 text-sm">人</span></div>
+                        <div class="text-900 font-medium text-xl">{{ totalUserNumber }} <span class="text-500 text-sm">人</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-user-plus text-blue-500 text-xl"></i>
@@ -373,7 +379,7 @@ watch(
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">充值数</span>
+                        <span class="block text-500 font-medium mb-3">今日充值数</span>
                         <div class="text-900 font-medium text-xl">{{ newAmountNumber }} <span class="text-500 text-sm">元</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
@@ -389,7 +395,7 @@ watch(
                 <div class="flex justify-content-between mb-3">
                     <div>
                         <span class="block text-500 font-medium mb-3">总充值额</span>
-                        <div class="text-900 font-medium text-xl">{{ newAmountNumber }} <span class="text-500 text-sm">元</span></div>
+                        <div class="text-900 font-medium text-xl">{{ totalAmountNumber }} <span class="text-500 text-sm">元</span></div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-bitcoin text-orange-500 text-xl"></i>

@@ -76,13 +76,10 @@ const isOutsideClicked = (event) => {
         </button>
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <button class="p-link layout-topbar-button actived">
-                <span>游戏1</span>
+                <span>游戏名称</span>
             </button>
             <button class="p-link layout-topbar-button">
                 <span>游戏2</span>
-            </button>
-            <button class="p-link layout-topbar-button">
-                <span>游戏3</span>
             </button>
         </div>
     </div>

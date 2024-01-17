@@ -32,8 +32,6 @@ const barOptions = ref(null);
 const productService = new ProductService();
 const timer = ref(null);
 
-
-
 onMounted(() => {
     /**
      * 获取统计数据,每个十分钟轮询一次
@@ -43,17 +41,6 @@ onMounted(() => {
     }, 1000 * 60 * 10);
 
     getStatisticsData();
-    [
-        { rq: '2024-01-03', userCount: 12, money: 22 },
-        { rq: '2024-01-04', userCount: 1, money: 158 },
-        { rq: '2024-01-05', userCount: 9, money: 212 },
-        { rq: '2024-01-06', userCount: 6, money: 222 },
-        { rq: '2024-01-07', userCount: 19, money: 143 }
-    ].map((item) => {
-        xData.value.push(proxy.$moment(item.rq).format('YYYY-MM-DD'));
-        userData.value.push(item.userCount || 0);
-        moneyData.value.push(item.money || 0);
-    });
 
     productService.getMenuData().then((res) => {
         console.log(res);
@@ -75,10 +62,13 @@ onMounted(() => {
         //     });
         // }
     });
+
+    
 });
 
-const initData = (kssj,jssj) => {
-      productService
+const initData = (kssj, jssj) => {
+   
+    productService
         .getHistoryData({
             kssj: kssj,
             jssj: jssj
@@ -94,32 +84,83 @@ const initData = (kssj,jssj) => {
                 console.log(userData.value, moneyData.value, xData.value);
             }
         });
-}
+
+ const bardatatemp = {
+        labels: [],
+        datasets: [
+            {
+                label: 'TAP',
+                backgroundColor: 'rgba(99, 102 ,241,0.5)',
+                borderColor: documentStyle.getPropertyValue('--indigo-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: []
+            },
+            {
+                label: '微信小程序',
+                backgroundColor: 'rgba(20 ,184, 166,0.5)',
+                borderColor: documentStyle.getPropertyValue('--teal-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: []
+            },
+            {
+                label: '信息流',
+                backgroundColor: 'rgba(249, 115 ,22,0.5)',
+                borderColor: documentStyle.getPropertyValue('--orange-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: []
+            }
+        ]
+    };
+    productService
+        .getPlatformData({
+            kssj: kssj,
+            jssj: jssj
+        })
+        .then((res) => {
+            if (Array.isArray(res)) {
+                res.map((item) => {
+                    bardatatemp.labels.push(item.zb);
+                    bardatatemp.datasets[0].data.push(item.tap);
+                    bardatatemp.datasets[1].data.push(item.weixin);
+                    bardatatemp.datasets[2].data.push(item.xxl);
+                });
+
+                barData.value = bardatatemp
+            }
+        });
+};
+
 watch(
     () => currentDay.value,
     (nv) => {
-        const start = proxy.$moment().subtract(nv, 'days').format("YYYY-MM-DD");
-        const end = proxy.$moment().format("YYYY-MM-DD");
-        console.log(start,end)
+        const start = proxy.$moment().subtract(nv-1, 'days').format('YYYY-MM-DD');
+        const end = proxy.$moment().format('YYYY-MM-DD');
+        console.log(start, end);
         initData(start, end);
+        time.value = ""
     },
     {
         immediate: true
     }
 );
 
-watch(()=>time.value,(nv)=>{
-   const [start,end] = nv
-   start&&end&&initData(proxy.$moment(start).format("YYYY-MM-DD"), proxy.$moment(end).format("YYYY-MM-DD"));
-})
+watch(
+    () => time.value,
+    (nv) => {
+        const [start, end] = nv;
+        start && end && initData(proxy.$moment(start).format('YYYY-MM-DD'), proxy.$moment(end).format('YYYY-MM-DD'));
+    }
+);
 onBeforeUnmount(() => {
     clearInterval(timer.value);
 });
 const getStatisticsData = async () => {
     productService.getOnlineUsers().then((res) => {
         onLineNumber.value = res.login || '0';
-                totalUserNumber.value = res.all|| '0'
-
+        totalUserNumber.value = res.all || '0';
     });
     productService.getNewUser().then((res) => {
         newUserNumber.value = res || '0';
@@ -137,35 +178,6 @@ const setColorOptions = () => {
 };
 
 const setChart = () => {
-    barData.value = {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-        datasets: [
-            {
-                label: 'TAP',
-                backgroundColor: 'rgba(99, 102 ,241,0.5)',
-                borderColor: documentStyle.getPropertyValue('--indigo-500'),
-                borderRadius: 3,
-                borderWidth: 1,
-                data: [65, 59, 80, 81, 56, 55, 40]
-            },
-            {
-                label: '微信小程序',
-                backgroundColor: 'rgba(20 ,184, 166,0.5)',
-                borderColor: documentStyle.getPropertyValue('--teal-500'),
-                borderRadius: 3,
-                borderWidth: 1,
-                data: [28, 48, 40, 19, 86, 27, 90]
-            },
-            {
-                label: '信息流',
-                backgroundColor: 'rgba(249, 115 ,22,0.5)',
-                borderColor: documentStyle.getPropertyValue('--orange-500'),
-                borderRadius: 3,
-                borderWidth: 1,
-                data: [28, 48, 40, 19, 86, 27, 90]
-            }
-        ]
-    };
     barOptions.value = {
         plugins: {
             legend: {

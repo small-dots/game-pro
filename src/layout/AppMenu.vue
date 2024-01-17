@@ -17,7 +17,7 @@ const model = ref([
             {
                 label: '发布公告',
                 icon: 'pi pi-fw pi-volume-down',
-                to: '/uikit/table'
+                to: '/uikit/notice'
             },
             // {
             //     label: '外挂检测',

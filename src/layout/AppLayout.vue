@@ -5,11 +5,16 @@ import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppConfig from './AppConfig.vue';
 import { useLayout } from '@/layout/composables/layout';
+import ProductService from '@/service/ProductService';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+const productService = new ProductService();
+const serverList = ref([]);
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
-
+const showServers = ref(false);
 const outsideClickListener = ref(null);
-
+const currentServer =ref('')
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
         bindOutsideClickListener();
@@ -17,6 +22,45 @@ watch(isSidebarActive, (newVal) => {
         unbindOutsideClickListener();
     }
 });
+
+//监听路由
+watch(
+    () => router.currentRoute.value.path,
+    (newVal) => {
+        if (newVal == '/uikit/charts') {
+            showServers.value = true;
+            productService.getMenuData().then((res) => {
+                console.log('dasdasd', res);
+                // res每50个一组
+                const groupedData = res.reduce((result, item, index) => {
+                    const chunkIndex = Math.floor(index / 50);
+
+                    if (!result[chunkIndex]) {
+                        result[chunkIndex] = []; // start a new chunk
+                    }
+
+                    result[chunkIndex].push(item);
+
+                    return result;
+                }, []);
+
+                serverList.value = groupedData.map((item, index) => {
+                    return {
+                        label: `区服${index + 1}-区服${(index + 1) * 50}`,
+                        code: `区服${index + 1}-区服${(index + 1) * 50}`,
+                        items: item
+                    };
+                });
+                currentServer.value = 
+                    serverList.value.length > 0 ? serverList.value[0].items[0] : '';
+                console.log(serverList.value)
+            });
+        } else {
+            showServers.value = false;
+        }
+    },
+    { immediate: true, deep: true }
+);
 
 const containerClass = computed(() => {
     return {
@@ -55,6 +99,10 @@ const isOutsideClicked = (event) => {
 
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
+
+const serverChange=(e)=>{
+    console.log(e)
+}
 </script>
 
 <template>
@@ -64,7 +112,17 @@ const isOutsideClicked = (event) => {
             <app-sidebar></app-sidebar>
         </div>
         <div class="layout-main-container">
-            <div class="layout-main">
+            <div class="layout-main" :style="{ display: showServers ? 'flex' : '' }">
+                <div class="server-list" v-if="showServers">
+                    <Listbox :options="serverList" @change="serverChange" v-model="currentServer" optionLabel="name" optionGroupLabel="label" optionGroupChildren="items" class="w-full md:w-14rem" listStyle="max-height:250px">
+                        <template #optiongroup="slotProps">
+                            <div class="flex align-items-center">
+                                <i class="pi pi-bookmark-fill"></i>
+                                <div>{{ slotProps.option.label }}</div>
+                            </div>
+                        </template>
+                    </Listbox>
+                </div>
                 <router-view></router-view>
             </div>
             <app-footer></app-footer>
@@ -74,4 +132,16 @@ const isOutsideClicked = (event) => {
     </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.server-list {
+    height: calc(100vh - 9rem);
+    margin-right: 20px;
+    .p-listbox {
+        height: 100%;
+        :deep(.p-listbox-list-wrapper) {
+            height: 100%;
+            max-height: none !important;
+        }
+    }
+}
+</style>

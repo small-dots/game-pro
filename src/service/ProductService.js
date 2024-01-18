@@ -1,3 +1,5 @@
+const value = import.meta.env.DEV ? 'http://192.168.1.107:8103' : 'getCurrentDomain';
+const url = value == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : value
 export default class ProductService {
     getProductsSmall() {
         return fetch('demo/data/products-small.json')
@@ -22,7 +24,7 @@ export default class ProductService {
      * @returns 
      */
     getOnlineUsers() {
-        return fetch('http://192.168.1.107:8103/api/tj/login/count')
+        return fetch(url+'/api/tj/login/count')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -31,7 +33,7 @@ export default class ProductService {
      * 获取菜单
      */
     getMenuData() {
-        return fetch('http://192.168.1.107:8103/api/tj/server/list')
+        return fetch(url+'/api/tj/server/list')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -40,7 +42,7 @@ export default class ProductService {
      * 发布公告
      */
     postNotice(data) {
-        return fetch('http://192.168.1.107:8103/api/gg/insert', {
+        return fetch(url+'/api/gg/insert', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -58,7 +60,7 @@ export default class ProductService {
         const queryParams = Object.keys(query1)
             .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query1[k]))
             .join('&');
-        return fetch('http://192.168.1.107:8103/api/gg/select?' + queryParams, {
+        return fetch(url+'/api/gg/select?' + queryParams, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -73,7 +75,7 @@ export default class ProductService {
      * 当日新增用户
      */
     getNewUser() {
-        return fetch('http://192.168.1.107:8103/api/tj/today/added')
+        return fetch(url+'/api/tj/today/added')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -82,7 +84,7 @@ export default class ProductService {
      * 当日充值数据
      */
     getNewAmount() {
-        return fetch('http://192.168.1.107:8103/api/tj/today/amount')
+        return fetch(url+'/api/tj/today/amount')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -93,7 +95,7 @@ export default class ProductService {
         const queryParams = Object.keys(query)
             .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
             .join('&');
-        return fetch('http://192.168.1.107:8103/api/tj/period?' + queryParams)
+        return fetch(url+'/api/tj/period?' + queryParams)
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -102,7 +104,7 @@ export default class ProductService {
      * 邮件发送
      */
     sendEmail(data) {
-        return fetch('http://192.168.1.107:8103/api/msg/insert', {
+        return fetch(url+'/api/msg/insert', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -120,7 +122,7 @@ export default class ProductService {
         const queryParams = Object.keys(cdk)
             .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(cdk[k]))
             .join('&');
-        return fetch('http://192.168.1.107:8103/api/cdk/select?' + queryParams, {
+        return fetch(url+'/api/cdk/select?' + queryParams, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -131,7 +133,7 @@ export default class ProductService {
             .then((d) => d.data);
     }
     deleteCDK(cdk) {
-        return fetch('http://192.168.1.107:8103/api/cdk/delete', {
+        return fetch(url+'/api/cdk/delete', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -142,7 +144,7 @@ export default class ProductService {
             .then((d) => d.code);
     }
     updateCDK(cdk) {
-        return fetch('http://192.168.1.107:8103/api/cdk/update', {
+        return fetch(url+'/api/cdk/update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -153,7 +155,7 @@ export default class ProductService {
             .then((d) => d.code);
     }
     addCDK(cdk) {
-        return fetch('http://192.168.1.107:8103/api/cdk/insert', {
+        return fetch(url+'/api/cdk/insert', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -171,7 +173,7 @@ export default class ProductService {
         const queryParams = Object.keys(data)
         .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
         .join('&');
-        return fetch('http://192.168.1.107:8103/api/xtpz/select?'+queryParams)
+        return fetch(url+'/api/xtpz/select?'+queryParams)
         .then((res) => res.json())
         .then((d) => d.data);
     }
@@ -180,7 +182,7 @@ export default class ProductService {
      * 统计平台数据
      */
     getPlatformData(data) {
-        return fetch('http://192.168.1.107:8103/api/tj/plat', {
+        return fetch(url+'/api/tj/plat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

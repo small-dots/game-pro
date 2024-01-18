@@ -42,26 +42,7 @@ onMounted(() => {
 
     getStatisticsData();
 
-    productService.getMenuData().then((res) => {
-        console.log(res);
-        // if (Array.isArray(res)) {
-        //     // 递归数据，每50条为一组
-        //     const groupedData = res.reduce((result, item, index) => {
-        //         const groupIndex = Math.floor(index / 50);
-        //         if (!result[groupIndex]) {
-        //             result[groupIndex] = {
-        //                 label: `${groupIndex * 50 + 1}-${(groupIndex + 1) * 50}区服`,
-        //                 items: []
-        //             };
-        //         }
-        //         result[groupIndex].items.push({
-        //             label: item.name,
-        //             to: '/uikit/charts'
-        //         });
-        //         return result;
-        //     });
-        // }
-    });
+    
 
     
 });

@@ -76,11 +76,11 @@ const isOutsideClicked = (event) => {
         </button>
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <button class="p-link layout-topbar-button actived">
-                <span>游戏名称</span>
+                <span>群英打三国</span>
             </button>
-            <button class="p-link layout-topbar-button">
-                <span>游戏2</span>
-            </button>
+            <!-- <button class="p-link layout-topbar-button">
+                <span>群英打三国</span>
+            </button> -->
         </div>
     </div>
 </template>
@@ -91,5 +91,7 @@ const isOutsideClicked = (event) => {
     outline-offset: 0;
     transition: box-shadow 0.2s;
     box-shadow: var(--focus-ring);
+    font-weight: bold;
+    color: #000 !important;
 }
 </style>

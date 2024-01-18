@@ -11,6 +11,8 @@ const router = createRouter({
                 {
                     path: '/',
                     name: 'dashboard',
+                    redirect:"/uikit/charts",
+
                     component: () => import('@/views/Dashboard.vue')
                 },
                 {

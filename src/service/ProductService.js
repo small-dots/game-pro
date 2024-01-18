@@ -190,6 +190,6 @@ export default class ProductService {
             body: JSON.stringify(data),
         })
             .then((res) => res.json())
-            .then((d) => d.data);
+            .then((d) => d);
     }
 }

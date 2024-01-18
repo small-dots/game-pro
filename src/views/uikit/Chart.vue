@@ -41,32 +41,10 @@ onMounted(() => {
     }, 1000 * 60 * 10);
 
     getStatisticsData();
-
-    
-
-    
 });
 
 const initData = (kssj, jssj) => {
-   
-    productService
-        .getHistoryData({
-            kssj: kssj,
-            jssj: jssj
-        })
-        .then((res) => {
-            if (Array.isArray(res)) {
-                res.map((item) => {
-                    xData.value.push(proxy.$moment(item.rq).format('YYYY-MM-DD'));
-                    userData.value.push(item.userCount || 0);
-                    moneyData.value.push(item.money || 0);
-                });
-
-                console.log(userData.value, moneyData.value, xData.value);
-            }
-        });
-
- const bardatatemp = {
+    const bardatatemp = {
         labels: [],
         datasets: [
             {
@@ -95,6 +73,9 @@ const initData = (kssj, jssj) => {
             }
         ]
     };
+    const xData_t = [];
+    const userData_t = [];
+    const moneyData_t = [];
     productService
         .getPlatformData({
             kssj: kssj,
@@ -103,13 +84,22 @@ const initData = (kssj, jssj) => {
         .then((res) => {
             if (Array.isArray(res)) {
                 res.map((item) => {
+                    const total_user = item.tap + item.xxl + item.weixin;
                     bardatatemp.labels.push(item.zb);
                     bardatatemp.datasets[0].data.push(item.tap);
                     bardatatemp.datasets[1].data.push(item.weixin);
                     bardatatemp.datasets[2].data.push(item.xxl);
-                });
 
-                barData.value = bardatatemp
+                    xData_t.push(proxy.$moment(item.zb).format('YYYY-MM-DD'));
+                    userData_t.push(total_user || 0);
+                    moneyData_t.push(item.je || 0);
+                });
+                xData.value = xData_t;
+                userData.value = userData_t;
+                moneyData.value = moneyData_t;
+                barData.value = bardatatemp;
+
+                setChart()
             }
         });
 };
@@ -117,11 +107,13 @@ const initData = (kssj, jssj) => {
 watch(
     () => currentDay.value,
     (nv) => {
-        const start = proxy.$moment().subtract(nv-1, 'days').format('YYYY-MM-DD');
+        const start = proxy
+            .$moment()
+            .subtract(nv - 1, 'days')
+            .format('YYYY-MM-DD');
         const end = proxy.$moment().format('YYYY-MM-DD');
-        console.log(start, end);
         initData(start, end);
-        time.value = ""
+        time.value = '';
     },
     {
         immediate: true
@@ -235,6 +227,7 @@ const setChart = () => {
             }
         }
     };
+
     lineDataMoney.value = {
         labels: xData.value,
         datasets: [

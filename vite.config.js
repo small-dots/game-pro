@@ -11,6 +11,15 @@ export default defineConfig(() => {
             alias: {
                 '@': fileURLToPath(new URL('./src', import.meta.url))
             }
+        },
+        server:{
+            proxy: {
+                '/dev-api': {
+                  target: 'http://49.232.128.232',
+                  changeOrigin: true,
+                  rewrite: (path) => path.replace(/^\/dev-api/, ''),
+                },
+              },
         }
     };
 });

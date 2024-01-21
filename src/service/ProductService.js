@@ -1,4 +1,4 @@
-const value = import.meta.env.DEV ? 'http://192.168.1.107:8103' : 'getCurrentDomain';
+const value = import.meta.env.DEV ? 'dev-api' : 'getCurrentDomain';
 const url = value == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : value
 export default class ProductService {
     getProductsSmall() {

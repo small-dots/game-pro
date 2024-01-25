@@ -2,6 +2,8 @@
 import { onMounted, ref, watch, onBeforeUnmount, getCurrentInstance } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import ProductService from '@/service/ProductService';
+import { useEventBus } from '@vueuse/core';
+const bus = useEventBus('server-selected');
 const { proxy } = getCurrentInstance();
 const { layoutConfig } = useLayout();
 let documentStyle = getComputedStyle(document.documentElement);
@@ -31,6 +33,7 @@ const lineOptionsMoney = ref(null);
 const barOptions = ref(null);
 const productService = new ProductService();
 const timer = ref(null);
+const ip =ref('getCurrentDomain')
 
 onMounted(() => {
     /**
@@ -41,6 +44,20 @@ onMounted(() => {
     }, 1000 * 60 * 10);
 
     getStatisticsData();
+    bus.on((name,data,) => {
+        ip.value = data?.ip
+        console.log('dasd',name, data);
+        if(name =='serverChange'){
+            console.log('start refresh...')
+            getStatisticsData()
+           const start = proxy
+            .$moment()
+            .subtract(2, 'days')
+            .format('YYYY-MM-DD');
+        const end = proxy.$moment().format('YYYY-MM-DD');
+        initData(start, end);
+        }
+    });
 });
 
 const initData = (kssj, jssj) => {
@@ -79,7 +96,8 @@ const initData = (kssj, jssj) => {
     productService
         .getPlatformData({
             kssj: kssj,
-            jssj: jssj
+            jssj: jssj,
+            ip:ip.value
         })
         .then((res) => {
             if (Array.isArray(res)) {
@@ -99,7 +117,7 @@ const initData = (kssj, jssj) => {
                 moneyData.value = moneyData_t;
                 barData.value = bardatatemp;
 
-                setChart()
+                setChart();
             }
         });
 };
@@ -131,14 +149,14 @@ onBeforeUnmount(() => {
     clearInterval(timer.value);
 });
 const getStatisticsData = async () => {
-    productService.getOnlineUsers().then((res) => {
+    productService.getOnlineUsers({ip:ip.value}).then((res) => {
         onLineNumber.value = res.login || '0';
         totalUserNumber.value = res.all || '0';
     });
-    productService.getNewUser().then((res) => {
+    productService.getNewUser({ip:ip.value}).then((res) => {
         newUserNumber.value = res || '0';
     });
-    productService.getNewAmount().then((res) => {
+    productService.getNewAmount({ip:ip.value}).then((res) => {
         newAmountNumber.value = res.today || '0';
         totalAmountNumber.value = res.all || '0';
     });

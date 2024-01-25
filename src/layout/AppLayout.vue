@@ -7,14 +7,15 @@ import AppConfig from './AppConfig.vue';
 import { useLayout } from '@/layout/composables/layout';
 import ProductService from '@/service/ProductService';
 import { useRouter } from 'vue-router';
-
+import { useEventBus } from '@vueuse/core';
+const bus = useEventBus('server-selected');
 const router = useRouter();
 const productService = new ProductService();
 const serverList = ref([]);
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 const showServers = ref(false);
 const outsideClickListener = ref(null);
-const currentServer =ref('')
+const currentServer = ref('');
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
         bindOutsideClickListener();
@@ -51,9 +52,10 @@ watch(
                         items: item
                     };
                 });
-                currentServer.value = 
-                    serverList.value.length > 0 ? serverList.value[0].items[0] : '';
-                console.log(serverList.value)
+                localStorage.setItem('servers', JSON.stringify(serverList.value));
+                currentServer.value = serverList.value.length > 0 ? serverList.value[0].items[0] : '';
+                console.log(currentServer.value);
+                localStorage.setItem('server', JSON.stringify(currentServer.value));
             });
         } else {
             showServers.value = false;
@@ -100,9 +102,11 @@ const isOutsideClicked = (event) => {
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
 
-const serverChange=(e)=>{
-    console.log(e)
-}
+const serverChange = (e) => {
+    console.log(e);
+    localStorage.setItem('server', JSON.stringify(e.value));
+    bus.emit('serverChange', e.value);
+};
 </script>
 
 <template>

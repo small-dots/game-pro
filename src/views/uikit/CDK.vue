@@ -49,6 +49,14 @@ const del = (row) => {
     });
 };
 
+const formatKey = (text) => {
+    if(!text) return '-'
+    const key = text.split('*')[0];
+    const num = text.split('*')[1];
+    const result = djpz.value.filter((item) => item.name == key) || [];
+    return result[0]?.nameZn + '*' + num;
+};
+
 const submit = () => {
     if (modalinfo.gqsj && modalinfo.cdk) {
         const params = {
@@ -106,11 +114,11 @@ const edit = (rowData) => {
     addModal.value = true;
     modalinfo.cdk = rowData.cdk;
     modalinfo.gqsj = proxy.$moment(rowData.gqsj).format('YYYY-MM-DD');
-    modalinfo.jl1=rowData.jl1;
-    modalinfo.jl2=rowData.jl2;
-    modalinfo.jl3=rowData.jl3;
-    modalinfo.jl4=rowData.jl4;
-    modalinfo.jl5=rowData.jl5;
+    modalinfo.jl1 = rowData.jl1;
+    modalinfo.jl2 = rowData.jl2;
+    modalinfo.jl3 = rowData.jl3;
+    modalinfo.jl4 = rowData.jl4;
+    modalinfo.jl5 = rowData.jl5;
 };
 const initTableData = (query) => {
     productService.getCDK({ cdk: noticeTitle.value || '' }, { pageSize: 9999, current: 1 }).then((data) => {
@@ -121,14 +129,13 @@ const initTableData = (query) => {
 onBeforeMount(() => {
     initTableData();
     productService.getRewardConfig({ xtpz: 'djpz' }).then((res) => {
-        console.log(res);
         djpz.value = JSON.parse(res.pzz);
     });
 });
 </script>
 
 <template>
-    <div class="grid">
+    <div class="grid" style="height:100%">
         <div class="col-12 md:col-12">
             <div class="formgroup-inline card">
                 <div class="field">
@@ -143,18 +150,38 @@ onBeforeMount(() => {
         <div class="col-12">
             <div class="card">
                 <h5>CDK列表</h5>
-                <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" scrollHeight="400px" scrollDirection="both" class="mt-3">
+                <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" scrollHeight="500px" scrollDirection="both" class="mt-3">
                     <template #header>
                         <div class="flex justify-content-between">
                             <Button type="button" severity="success" icon="pi pi-plus" label="新增" @click="openModal" />
                         </div>
                     </template>
-                    <Column field="cdk" header="CDK" :style="{ width: '300px' }" frozen></Column>
-                    <Column field="jl1" header="奖励1"></Column>
-                    <Column field="jl2" header="奖励2"></Column>
-                    <Column field="jl3" header="奖励3"></Column>
-                    <Column field="jl4" header="奖励4"></Column>
-                    <Column field="jl5" header="奖励5"></Column>
+                    <Column field="cdk" header="CDK" :style="{ width: '200px' }" frozen></Column>
+                    <Column field="jl1" header="奖励1">
+                        <template #body="{ data }">
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ formatKey(data.jl1) }}</span>
+                        </template></Column
+                    >
+                    <Column field="jl2" header="奖励2">
+                        <template #body="{ data }">
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ formatKey(data.jl2) }}</span>
+                        </template>
+                    </Column>
+                    <Column field="jl3" header="奖励3">
+                        <template #body="{ data }">
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ formatKey(data.jl3) }}</span>
+                        </template>
+                    </Column>
+                    <Column field="jl4" header="奖励4">
+                        <template #body="{ data }">
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ formatKey(data.jl4) }}</span>
+                        </template>
+                    </Column>
+                    <Column field="jl5" header="奖励5">
+                        <template #body="{ data }">
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ formatKey(data.jl5) }}</span>
+                        </template>
+                    </Column>
                     <Column field="gqsj" header="过期时间" :style="{ width: '200px' }">
                         <template #body="{ data }">
                             <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ $moment(data.gqsj).format('YYYY-MM-DD HH:mm:ss') }}</span>

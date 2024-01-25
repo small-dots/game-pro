@@ -15,7 +15,7 @@ const modalinfo = reactive({
     bt: '',
     type: '2'
 });
-const total =ref(0)
+const total = ref(0);
 
 const submit = () => {
     if (modalinfo.gqsj && modalinfo.ggnr && modalinfo.bt) {
@@ -24,13 +24,23 @@ const submit = () => {
                 toast.add({ severity: 'success', summary: '提示', detail: '发布成功', group: 'tl', life: 3000 });
                 addModal.value = false;
                 initTableData();
-            }else{
+            } else {
                 toast.add({ severity: 'error', summary: '提示', detail: '发布失败', group: 'tl', life: 3000 });
             }
         });
     } else {
         toast.add({ severity: 'error', summary: '提示', detail: '请填写全部的表单项', group: 'tl', life: 3000 });
     }
+};
+
+const del = (row) => {
+    productService.deleteNotice({ id: row.id }).then(res=>{
+        console.log(res)
+        if(res==0){
+             toast.add({ severity: 'success', summary: '提示', detail: '删除成功', group: 'tl', life: 3000 });
+             initTableData();
+        }
+    })
 };
 
 const reset = () => {
@@ -43,8 +53,8 @@ const openModal = () => {
 
 const initTableData = (query) => {
     productService.getNoticeList({ bt: noticeTitle.value || '' }, { pageSize: 9999, current: 1 }).then((data) => {
-        msgList.value = data.records
-        total.value = Number(data.total)
+        msgList.value = data.records;
+        total.value = Number(data.total);
     });
 };
 onBeforeMount(() => {
@@ -68,7 +78,7 @@ onBeforeMount(() => {
         <div class="col-12">
             <div class="card">
                 <h5>公告列表</h5>
-                <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5,10, 20, 50]" scrollHeight="400px" scrollDirection="both" class="mt-3">
+                <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" scrollHeight="400px" scrollDirection="both" class="mt-3">
                     <template #header>
                         <div class="flex justify-content-between">
                             <Button type="button" icon="pi pi-plus" label="新增" outlined @click="openModal" />
@@ -78,9 +88,14 @@ onBeforeMount(() => {
                     <Column field="ggnr" header="公告内容"></Column>
                     <Column field="gqsj" header="过期时间" :style="{ width: '200px' }">
                         <template #body="{ data }">
-                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{$moment(data.gqsj).format('YYYY-MM-DD HH:mm:ss')  }}</span>
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ $moment(data.gqsj).format('YYYY-MM-DD HH:mm:ss') }}</span>
                         </template>
                     </Column>
+                    <Column field="cjsj" header="操作">
+                        <template #body="{ data }">
+                            <Button type="button" class="p-button-danger mr-2" @click="del(data)">删除</Button>
+                        </template></Column
+                    >
                 </DataTable>
             </div>
         </div>

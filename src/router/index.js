@@ -36,6 +36,11 @@ const router = createRouter({
                     component: () => import('@/views/uikit/FloatLabel.vue')
                 },
                 {
+                    path: '/uikit/global',
+                    name: 'global',
+                    component: () => import('@/views/uikit/global.vue')
+                },
+                {
                     path: '/uikit/invalidstate',
                     name: 'invalidstate',
                     component: () => import('@/views/uikit/InvalidState.vue')

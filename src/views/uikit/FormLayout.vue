@@ -2,6 +2,7 @@
 import { reactive, ref, getCurrentInstance, onMounted } from 'vue';
 import ProductService from '@/service/ProductService';
 import { useToast } from 'primevue/usetoast';
+import { Subject } from 'rxjs';
 
 const productService = new ProductService();
 const { proxy } = getCurrentInstance();
@@ -10,7 +11,8 @@ const djpz = ref([]);
 const toast = useToast();
 const rangeOptions = ref(['全服', '指定用户']);
 const selectedjl = ref();
-
+const stompClient = ref([]);
+let stopmClientSingle = null;
 const num = reactive({
     n1: 0,
     n2: 0,
@@ -30,9 +32,14 @@ const formData = reactive({
     jl2: '',
     jl3: '',
     jl4: '',
-    jl5: ''
+    jl5: '',
+    server: ''
 });
+
+const servers = ref([]);
 onMounted(() => {
+    servers.value = localStorage.getItem('servers') ? JSON.parse(localStorage.getItem('servers'))[0].items : [];
+    console.log(servers.value);
     productService.getRewardConfig({ xtpz: 'djpz' }).then((res) => {
         console.log(res);
         djpz.value = JSON.parse(res.pzz);
@@ -49,6 +56,82 @@ const send = () => {
         toast.add({ severity: 'error', summary: '提示', detail: '用户ID必输', group: 'tl', life: 3000 });
         return;
     }
+
+    const content = range.value == '指定用户'? {
+        bt: formData.bt,
+        cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
+        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
+        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
+        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
+        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
+        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
+        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
+        userId: formData.userId,
+        xxnr: formData.xxnr,
+        yd: 0
+    }:{
+        bt: formData.bt,
+        cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
+        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
+        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
+        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
+        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
+        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
+        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
+        xxnr: formData.xxnr,
+        yd: 0
+    }
+
+    // const ip = window.location.protocol + '//' + window.location.host;
+    const ip = '';
+    if (stopmClientSingle !== null) {
+        stopmClientSingle.disconnect();
+    }
+    stompClient.value.map((a) => {
+        if (a != null) {
+            a.disconnect();
+        }
+    });
+    stompClient.value = [];
+
+    if (range.value != '指定用户') {
+        servers.value.map((s, i) => {
+            console.log(';l;', `http://${s.ip}:8099/endpoint-websocket`);
+            const socket = new SockJS(`http://${s.ip}:8099/endpoint-websocket`); //连接上端点(基站)
+            const SC = Stomp.over(socket); //用stom进行包装，规范协议
+            SC.connect({}, (con) => {
+                console.log(con, '连接毁掉');
+                if (con.command == 'CONNECTED') {
+                    console.log('连接成功>..');
+                    SC.send('/app/messageAll', {}, JSON.stringify(content));
+                    stompClient.value.push(SC);
+                }
+                SC.subscribe('/topic/game_rank', function (result) {
+                    console.log('result=' + result);
+                }),
+                    (e) => {
+                        console.log(e);
+                    };
+            });
+        });
+        console.log(stompClient.value);
+    } else {
+        const socket = new SockJS(`http://${formData.server[0].ip}:8099/endpoint-websocket`); //连接上端点(基站)
+        stopmClientSingle = Stomp.over(socket); //用stom进行包装，规范协议
+        stopmClientSingle.connect({}, function (frame) {
+            if (frame.command == 'CONNECTED') {
+                console.log('连接成功>..');
+                stopmClientSingle.send('/app/message', {}, JSON.stringify(content));
+            }
+            console.log('Connected: ' + frame);
+            stopmClientSingle.subscribe('/topic/game_rank', function (result) {
+                console.log('result=' + result);
+            });
+        });
+        if (stopmClientSingle.connected) {
+        }
+    }
+
     if (!formData.bt) {
         toast.add({ severity: 'error', summary: '提示', detail: '邮件标题必输', group: 'tl', life: 3000 });
         return;
@@ -57,41 +140,10 @@ const send = () => {
         toast.add({ severity: 'error', summary: '提示', detail: '邮件内容必输', group: 'tl', life: 3000 });
         return;
     }
-    if (!formData.gqsj) {
+    if (!formData.gqsj ) {
         toast.add({ severity: 'error', summary: '提示', detail: '过期时间必输', group: 'tl', life: 3000 });
         return;
     }
-
-    const params = {
-        userId: range == '全服' ? '' : formData.userId,
-        bt: formData.bt,
-        xxnr: formData.xxnr,
-        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD'),
-        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
-        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
-        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
-        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
-        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : ''
-    };
-    productService.sendEmail(params).then((res) => {
-        if (res == 0) {
-            toast.add({ severity: 'success', summary: '提示', detail: '发送成功', group: 'tl' });
-
-            // 重置表单
-            formData.userId = '';
-            formData.bt = '';
-            formData.xxnr = '';
-            formData.gqsj = '';
-            formData.selectedjl = [];
-            formData.jl1 = '';
-            formData.jl2 = '';
-            formData.jl3 = '';
-            formData.jl4 = '';
-            formData.jl5 = '';
-        } else {
-            toast.add({ severity: 'error', summary: '提示', detail: '发送失败', group: 'tl', life: 3000 });
-        }
-    });
 };
 </script>
 
@@ -108,22 +160,26 @@ const send = () => {
                     <label for="name1">用户ID</label>
                     <InputText id="name1" v-model="formData.userId" type="text" />
                 </div>
-                <div class="field">
+                <div class="field" v-if="range == '指定用户'">
+                    <label for="name1">区服</label>
+                    <MultiSelect v-model="formData.server" :options="servers" optionLabel="name" placeholder="选择区服" class="w-full" />
+                </div>
+                <div class="field" >
                     <label for="name1">邮件标题</label>
                     <InputText id="name1" v-model="formData.bt" type="text" />
                 </div>
-                <div class="field">
+                <div class="field" >
                     <label for="email1">过期日期</label>
                     <Calendar dateFormat="yy/mm/dd" v-model="formData.gqsj" showIcon />
                 </div>
-                <div class="field">
+                <div class="field" >
                     <label for="address">奖励1</label>
                     <div class="flex-row">
                         <AutoComplete v-model="formData.jl1" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
                         <InputNumber inputId="stacked-buttons" v-model="num.n1" showButtons mode="decimal" :min="0" />
                     </div>
                 </div>
-                <div class="field">
+                <div class="field" >
                     <label for="address">奖励2</label>
                     <div class="flex-row">
                         <AutoComplete v-model="formData.jl2" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />

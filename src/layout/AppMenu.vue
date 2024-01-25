@@ -19,11 +19,11 @@ const model = ref([
                 icon: 'pi pi-fw pi-volume-down',
                 to: '/uikit/notice'
             },
-            // {
-            //     label: '外挂检测',
-            //     icon: 'pi pi-fw pi-bolt',
-            //      to: '/uikit/table'
-            // },
+            {
+                label: '全服通报',
+                icon: 'pi pi-fw pi-bolt',
+                 to: '/uikit/global'
+            },
             {
                 label: 'CDK',
                 icon: 'pi pi-fw pi-gift',

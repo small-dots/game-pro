@@ -23,8 +23,10 @@ export default class ProductService {
      * 获取在线人数
      * @returns 
      */
-    getOnlineUsers() {
-        return fetch(url+'/api/tj/login/count')
+    getOnlineUsers(data) {
+        const ip = data?.ip
+        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
+        return fetch(newurl + '/api/tj/login/count')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -33,7 +35,7 @@ export default class ProductService {
      * 获取菜单
      */
     getMenuData() {
-        return fetch(url+'/api/tj/server/list')
+        return fetch(url + '/api/tj/server/list')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -42,7 +44,7 @@ export default class ProductService {
      * 发布公告
      */
     postNotice(data) {
-        return fetch(url+'/api/gg/insert', {
+        return fetch(url + '/api/gg/insert', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,13 +56,25 @@ export default class ProductService {
     }
 
     /**
+     * 删除公告
+     */
+    deleteNotice(query) {
+        const queryParams = Object.keys(query)
+        .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
+        .join('&');
+    return fetch(url + '/api/gg/delete?' + queryParams)
+        .then((res) => res.json())
+        .then((d) => d.code);
+    }
+
+    /**
      * 查询公告列表
      */
     getNoticeList(query1, query2) {
         const queryParams = Object.keys(query1)
             .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query1[k]))
             .join('&');
-        return fetch(url+'/api/gg/select?' + queryParams, {
+        return fetch(url + '/api/gg/select?' + queryParams, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,8 +88,10 @@ export default class ProductService {
     /**
      * 当日新增用户
      */
-    getNewUser() {
-        return fetch(url+'/api/tj/today/added')
+    getNewUser(data) {
+        const ip = data?.ip
+        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
+        return fetch(newurl + '/api/tj/today/added')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -83,8 +99,10 @@ export default class ProductService {
     /**
      * 当日充值数据
      */
-    getNewAmount() {
-        return fetch(url+'/api/tj/today/amount')
+    getNewAmount(data) {
+        const ip = data?.ip
+        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
+        return fetch(newurl + '/api/tj/today/amount')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -95,7 +113,7 @@ export default class ProductService {
         const queryParams = Object.keys(query)
             .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
             .join('&');
-        return fetch(url+'/api/tj/period?' + queryParams)
+        return fetch(url + '/api/tj/period?' + queryParams)
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -104,7 +122,7 @@ export default class ProductService {
      * 邮件发送
      */
     sendEmail(data) {
-        return fetch(url+'/api/msg/insert', {
+        return fetch(url + '/api/msg/insert', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -118,11 +136,11 @@ export default class ProductService {
     /**
      * CDK
      */
-    getCDK(cdk,query2) {
+    getCDK(cdk, query2) {
         const queryParams = Object.keys(cdk)
             .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(cdk[k]))
             .join('&');
-        return fetch(url+'/api/cdk/select?' + queryParams, {
+        return fetch(url + '/api/cdk/select?' + queryParams, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -133,7 +151,7 @@ export default class ProductService {
             .then((d) => d.data);
     }
     deleteCDK(cdk) {
-        return fetch(url+'/api/cdk/delete', {
+        return fetch(url + '/api/cdk/delete', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -144,7 +162,7 @@ export default class ProductService {
             .then((d) => d.code);
     }
     updateCDK(cdk) {
-        return fetch(url+'/api/cdk/update', {
+        return fetch(url + '/api/cdk/update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -155,7 +173,7 @@ export default class ProductService {
             .then((d) => d.code);
     }
     addCDK(cdk) {
-        return fetch(url+'/api/cdk/insert', {
+        return fetch(url + '/api/cdk/insert', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -171,18 +189,20 @@ export default class ProductService {
      */
     getRewardConfig(data) {
         const queryParams = Object.keys(data)
-        .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
-        .join('&');
-        return fetch(url+'/api/xtpz/select?'+queryParams)
-        .then((res) => res.json())
-        .then((d) => d.data);
+            .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
+            .join('&');
+        return fetch(url + '/api/xtpz/select?' + queryParams)
+            .then((res) => res.json())
+            .then((d) => d.data);
     }
 
     /**
      * 统计平台数据
      */
     getPlatformData(data) {
-        return fetch(url+'/api/tj/plat', {
+        const ip = data?.ip
+        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
+        return fetch(newurl + '/api/tj/plat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

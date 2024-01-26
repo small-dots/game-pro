@@ -77,7 +77,6 @@ onBeforeMount(() => {
         </div>
         <div class="col-12">
             <div class="card">
-                <h5>公告列表</h5>
                 <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" scrollHeight="400px" scrollDirection="both" class="mt-3">
                     <template #header>
                         <div class="flex justify-content-between">

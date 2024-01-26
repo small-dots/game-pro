@@ -50,7 +50,7 @@ const del = (row) => {
 };
 
 const formatKey = (text) => {
-    if(!text) return '-'
+    if (!text) return '-';
     const key = text.split('*')[0];
     const num = text.split('*')[1];
     const result = djpz.value.filter((item) => item.name == key) || [];
@@ -103,6 +103,7 @@ const search = (event) => {
     items.value = djpz.value.filter((item) => {
         return item.nameZn.toLowerCase().includes(event.query.toLowerCase());
     });
+    console.log()
 };
 const openModal = () => {
     addModal.value = true;
@@ -135,7 +136,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-    <div class="grid" style="height:100%">
+    <div class="grid" style="height: 100%">
         <div class="col-12 md:col-12">
             <div class="formgroup-inline card">
                 <div class="field">
@@ -149,7 +150,6 @@ onBeforeMount(() => {
         </div>
         <div class="col-12">
             <div class="card">
-                <h5>CDK列表</h5>
                 <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" scrollHeight="500px" scrollDirection="both" class="mt-3">
                     <template #header>
                         <div class="flex justify-content-between">
@@ -211,35 +211,106 @@ onBeforeMount(() => {
             <div class="field col-12">
                 <label for="address">奖励1</label>
                 <div class="flex-row">
-                    <AutoComplete v-model="modalinfo.jl1" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                    <Dropdown v-model="modalinfo.jl1" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                        <template #value="slotProps">
+                            <div v-if="slotProps.value" class="flex align-items-center">
+                                <div>{{ slotProps.value.nameZn }}</div>
+                            </div>
+                            <span v-else>
+                                {{ slotProps.placeholder }}
+                            </span>
+                        </template>
+                        <template #option="slotProps">
+                            <div class="flex align-items-center">
+                                <div>{{ slotProps.option.nameZn }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
+
                     <InputNumber inputId="stacked-buttons" v-model="num.n1" showButtons mode="decimal" :min="0" />
                 </div>
             </div>
             <div class="field col-12">
                 <label for="address">奖励2</label>
                 <div class="flex-row">
-                    <AutoComplete v-model="modalinfo.jl2" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                   <Dropdown v-model="modalinfo.jl2" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                        <template #value="slotProps">
+                            <div v-if="slotProps.value" class="flex align-items-center">
+                                <div>{{ slotProps.value.nameZn }}</div>
+                            </div>
+                            <span v-else>
+                                {{ slotProps.placeholder }}
+                            </span>
+                        </template>
+                        <template #option="slotProps">
+                            <div class="flex align-items-center">
+                                <div>{{ slotProps.option.nameZn }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
                     <InputNumber inputId="stacked-buttons" v-model="num.n2" showButtons mode="decimal" :min="0" />
                 </div>
             </div>
             <div class="field col-12">
                 <label for="address">奖励3</label>
                 <div class="flex-row">
-                    <AutoComplete v-model="modalinfo.jl3" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                   <Dropdown v-model="modalinfo.jl3" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                        <template #value="slotProps">
+                            <div v-if="slotProps.value" class="flex align-items-center">
+                                <div>{{ slotProps.value.nameZn }}</div>
+                            </div>
+                            <span v-else>
+                                {{ slotProps.placeholder }}
+                            </span>
+                        </template>
+                        <template #option="slotProps">
+                            <div class="flex align-items-center">
+                                <div>{{ slotProps.option.nameZn }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
                     <InputNumber inputId="stacked-buttons" v-model="num.n3" showButtons mode="decimal" :min="0" />
                 </div>
             </div>
             <div class="field col-12">
                 <label for="address">奖励4</label>
                 <div class="flex-row">
-                    <AutoComplete v-model="modalinfo.jl4" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                   <Dropdown v-model="modalinfo.jl4" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                        <template #value="slotProps">
+                            <div v-if="slotProps.value" class="flex align-items-center">
+                                <div>{{ slotProps.value.nameZn }}</div>
+                            </div>
+                            <span v-else>
+                                {{ slotProps.placeholder }}
+                            </span>
+                        </template>
+                        <template #option="slotProps">
+                            <div class="flex align-items-center">
+                                <div>{{ slotProps.option.nameZn }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
                     <InputNumber inputId="stacked-buttons" v-model="num.n4" showButtons mode="decimal" :min="0" />
                 </div>
             </div>
             <div class="field col-12">
                 <label for="address">奖励5</label>
                 <div class="flex-row">
-                    <AutoComplete v-model="modalinfo.jl5" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                   <Dropdown v-model="modalinfo.jl5" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                        <template #value="slotProps">
+                            <div v-if="slotProps.value" class="flex align-items-center">
+                                <div>{{ slotProps.value.nameZn }}</div>
+                            </div>
+                            <span v-else>
+                                {{ slotProps.placeholder }}
+                            </span>
+                        </template>
+                        <template #option="slotProps">
+                            <div class="flex align-items-center">
+                                <div>{{ slotProps.option.nameZn }}</div>
+                            </div>
+                        </template>
+                    </Dropdown>
                     <InputNumber inputId="stacked-buttons" v-model="num.n5" showButtons mode="decimal" :min="0" />
                 </div>
             </div>

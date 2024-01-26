@@ -13,6 +13,7 @@ export default defineConfig(() => {
             }
         },
         server:{
+            port: 4895,
             proxy: {
                 '/dev-api': {
                   target: 'http://49.232.128.232',

@@ -3,7 +3,6 @@ import { reactive, ref, getCurrentInstance, onMounted } from 'vue';
 import ProductService from '@/service/ProductService';
 import { useToast } from 'primevue/usetoast';
 import { Subject } from 'rxjs';
-
 const productService = new ProductService();
 const { proxy } = getCurrentInstance();
 const items = ref([]);
@@ -57,30 +56,33 @@ const send = () => {
         return;
     }
 
-    const content = range.value == '指定用户'? {
-        bt: formData.bt,
-        cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
-        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
-        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
-        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
-        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
-        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
-        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
-        userId: formData.userId,
-        xxnr: formData.xxnr,
-        yd: 0
-    }:{
-        bt: formData.bt,
-        cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
-        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
-        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
-        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
-        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
-        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
-        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
-        xxnr: formData.xxnr,
-        yd: 0
-    }
+    const content =
+        range.value == '指定用户'
+            ? {
+                  bt: formData.bt,
+                  cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
+                  gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
+                  jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
+                  jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
+                  jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
+                  jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
+                  jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
+                  userId: formData.userId,
+                  xxnr: formData.xxnr,
+                  yd: 0
+              }
+            : {
+                  bt: formData.bt,
+                  cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
+                  gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
+                  jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
+                  jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
+                  jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
+                  jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
+                  jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
+                  xxnr: formData.xxnr,
+                  yd: 0
+              };
 
     // const ip = window.location.protocol + '//' + window.location.host;
     const ip = '';
@@ -140,7 +142,7 @@ const send = () => {
         toast.add({ severity: 'error', summary: '提示', detail: '邮件内容必输', group: 'tl', life: 3000 });
         return;
     }
-    if (!formData.gqsj ) {
+    if (!formData.gqsj) {
         toast.add({ severity: 'error', summary: '提示', detail: '过期时间必输', group: 'tl', life: 3000 });
         return;
     }
@@ -164,46 +166,116 @@ const send = () => {
                     <label for="name1">区服</label>
                     <MultiSelect v-model="formData.server" :options="servers" optionLabel="name" placeholder="选择区服" class="w-full" />
                 </div>
-                <div class="field" >
+                <div class="field">
                     <label for="name1">邮件标题</label>
                     <InputText id="name1" v-model="formData.bt" type="text" />
                 </div>
-                <div class="field" >
+                <div class="field">
                     <label for="email1">过期日期</label>
                     <Calendar dateFormat="yy/mm/dd" v-model="formData.gqsj" showIcon />
                 </div>
-                <div class="field" >
+                <div class="field">
                     <label for="address">奖励1</label>
                     <div class="flex-row">
-                        <AutoComplete v-model="formData.jl1" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                        <Dropdown v-model="formData.jl1" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                            <template #value="slotProps">
+                                <div v-if="slotProps.value" class="flex align-items-center">
+                                    <div>{{ slotProps.value.nameZn }}</div>
+                                </div>
+                                <span v-else>
+                                    {{ slotProps.placeholder }}
+                                </span>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex align-items-center">
+                                    <div>{{ slotProps.option.nameZn }}</div>
+                                </div>
+                            </template>
+                        </Dropdown>
                         <InputNumber inputId="stacked-buttons" v-model="num.n1" showButtons mode="decimal" :min="0" />
                     </div>
                 </div>
-                <div class="field" >
+                <div class="field">
                     <label for="address">奖励2</label>
                     <div class="flex-row">
-                        <AutoComplete v-model="formData.jl2" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                        <Dropdown v-model="formData.jl2" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                            <template #value="slotProps">
+                                <div v-if="slotProps.value" class="flex align-items-center">
+                                    <div>{{ slotProps.value.nameZn }}</div>
+                                </div>
+                                <span v-else>
+                                    {{ slotProps.placeholder }}
+                                </span>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex align-items-center">
+                                    <div>{{ slotProps.option.nameZn }}</div>
+                                </div>
+                            </template>
+                        </Dropdown>
                         <InputNumber inputId="stacked-buttons" v-model="num.n2" showButtons mode="decimal" :min="0" />
                     </div>
                 </div>
                 <div class="field">
                     <label for="address">奖励3</label>
                     <div class="flex-row">
-                        <AutoComplete v-model="formData.jl3" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                        <Dropdown v-model="formData.jl3" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                            <template #value="slotProps">
+                                <div v-if="slotProps.value" class="flex align-items-center">
+                                    <div>{{ slotProps.value.nameZn }}</div>
+                                </div>
+                                <span v-else>
+                                    {{ slotProps.placeholder }}
+                                </span>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex align-items-center">
+                                    <div>{{ slotProps.option.nameZn }}</div>
+                                </div>
+                            </template>
+                        </Dropdown>
                         <InputNumber inputId="stacked-buttons" v-model="num.n3" showButtons mode="decimal" :min="0" />
                     </div>
                 </div>
                 <div class="field">
                     <label for="address">奖励4</label>
                     <div class="flex-row">
-                        <AutoComplete v-model="formData.jl4" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                        <Dropdown v-model="formData.jl4" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                            <template #value="slotProps">
+                                <div v-if="slotProps.value" class="flex align-items-center">
+                                    <div>{{ slotProps.value.nameZn }}</div>
+                                </div>
+                                <span v-else>
+                                    {{ slotProps.placeholder }}
+                                </span>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex align-items-center">
+                                    <div>{{ slotProps.option.nameZn }}</div>
+                                </div>
+                            </template>
+                        </Dropdown>
                         <InputNumber inputId="stacked-buttons" v-model="num.n4" showButtons mode="decimal" :min="0" />
                     </div>
                 </div>
                 <div class="field">
                     <label for="address">奖励5</label>
                     <div class="flex-row">
-                        <AutoComplete v-model="formData.jl5" optionLabel="nameZn" display="chip" :suggestions="items" @complete="search" />
+                        <Dropdown v-model="formData.jl5" :options="djpz" filter optionLabel="nameZn" placeholder="选择奖励" class="w-full md:w-14rem">
+                            <template #value="slotProps">
+                                <div v-if="slotProps.value" class="flex align-items-center">
+                                    <div>{{ slotProps.value.nameZn }}</div>
+                                </div>
+                                <span v-else>
+                                    {{ slotProps.placeholder }}
+                                </span>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex align-items-center">
+                                    <div>{{ slotProps.option.nameZn }}</div>
+                                </div>
+                            </template>
+                        </Dropdown>
                         <InputNumber inputId="stacked-buttons" v-model="num.n5" showButtons mode="decimal" :min="0" />
                     </div>
                 </div>

@@ -33,7 +33,7 @@ const lineOptionsMoney = ref(null);
 const barOptions = ref(null);
 const productService = new ProductService();
 const timer = ref(null);
-const ip =ref('getCurrentDomain')
+const ip = ref('getCurrentDomain');
 
 onMounted(() => {
     /**
@@ -44,21 +44,49 @@ onMounted(() => {
     }, 1000 * 60 * 10);
 
     getStatisticsData();
-    bus.on((name,data,) => {
-        ip.value = data?.ip
-        console.log('dasd',name, data);
-        if(name =='serverChange'){
-            console.log('start refresh...')
-            getStatisticsData()
-           const start = proxy
-            .$moment()
-            .subtract(2, 'days')
-            .format('YYYY-MM-DD');
-        const end = proxy.$moment().format('YYYY-MM-DD');
-        initData(start, end);
+    bus.on((name, data) => {
+        console.log('daaa', data);
+        if (data?.children) {
+            // 计算全部服务器的和
+            calAllData(data);
+        } else {
+            ip.value = data?.data;
+            if (name == 'serverChange') {
+                getStatisticsData();
+                const start = proxy.$moment().subtract(2, 'days').format('YYYY-MM-DD');
+                const end = proxy.$moment().format('YYYY-MM-DD');
+                initData(start, end);
+            }
         }
     });
 });
+
+const calAllData = (data) => {
+    let d1 = 0;
+    let d2 = 0;
+    let d3 = 0;
+    let d4 = 0;
+    let d5 = 0;
+    Array.isArray(data.children) &&
+        data.children.map((item) => {
+            productService.getOnlineUsers({ ip: ip.data }).then((res) => {
+                d1 += res.login || 0;
+                d2 += res.all || 0;
+            });
+            productService.getNewUser({ ip: ip.data }).then((res) => {
+                d3 += res || 0;
+            });
+            productService.getNewAmount({ ip: ip.data }).then((res) => {
+                d4 += res.today || 0;
+                d5 += res.all || 0;
+            });
+        });
+    onLineNumber.value = d1;
+    totalUserNumber.value = d2;
+    newUserNumber.value = d3;
+    newAmountNumber.value = d4;
+    totalAmountNumber.value = d5;
+};
 
 const initData = (kssj, jssj) => {
     const bardatatemp = {
@@ -97,7 +125,7 @@ const initData = (kssj, jssj) => {
         .getPlatformData({
             kssj: kssj,
             jssj: jssj,
-            ip:ip.value
+            ip: ip.value
         })
         .then((res) => {
             if (Array.isArray(res)) {
@@ -149,14 +177,14 @@ onBeforeUnmount(() => {
     clearInterval(timer.value);
 });
 const getStatisticsData = async () => {
-    productService.getOnlineUsers({ip:ip.value}).then((res) => {
+    productService.getOnlineUsers({ ip: ip.value }).then((res) => {
         onLineNumber.value = res.login || '0';
         totalUserNumber.value = res.all || '0';
     });
-    productService.getNewUser({ip:ip.value}).then((res) => {
+    productService.getNewUser({ ip: ip.value }).then((res) => {
         newUserNumber.value = res || '0';
     });
-    productService.getNewAmount({ip:ip.value}).then((res) => {
+    productService.getNewAmount({ ip: ip.value }).then((res) => {
         newAmountNumber.value = res.today || '0';
         totalAmountNumber.value = res.all || '0';
     });

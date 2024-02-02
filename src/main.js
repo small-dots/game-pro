@@ -102,10 +102,13 @@ import VirtualScroller from 'primevue/virtualscroller';
 import BlockViewer from '@/components/BlockViewer.vue';
 import moment from "moment";
 import '@/assets/styles.scss';
+import pinia from "@/stores";
 
 const app = createApp(App);
 
 app.use(router);
+app.use(pinia);
+
 app.use(PrimeVue, {
   ripple: true, locale: {
     "startsWith": "以...开始",

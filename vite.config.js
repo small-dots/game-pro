@@ -16,8 +16,8 @@ export default defineConfig(() => {
       port: 4895,
       proxy: {
         '/dev-api': {
-          // target: 'http://49.232.128.232',
-          target: 'http://192.168.1.108:8013',
+          target: 'http://49.232.128.232',
+          // target: 'http://192.168.1.108:8013',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/dev-api/, ''),
         },

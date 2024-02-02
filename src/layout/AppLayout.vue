@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, ref } from 'vue';
+import { computed, watch, ref, getCurrentInstance } from 'vue';
 import AppTopbar from './AppTopbar.vue';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
@@ -8,6 +8,10 @@ import { useLayout } from '@/layout/composables/layout';
 import ProductService from '@/service/ProductService';
 import { useRouter } from 'vue-router';
 import { useEventBus } from '@vueuse/core';
+import { useResponseStore } from '@/stores/modules/response';
+const responseStore = useResponseStore();
+const { proxy } = getCurrentInstance();
+const worker = new Worker('web-workers/worker.js');
 const bus = useEventBus('server-selected');
 const router = useRouter();
 const productService = new ProductService();
@@ -32,6 +36,7 @@ watch(
     (newVal) => {
         if (newVal == '/uikit/charts') {
             showServers.value = true;
+
             productService.getMenuData().then((res) => {
                 // res每50个一组
                 const groupedData = res.reduce((result, item, index) => {
@@ -60,8 +65,35 @@ watch(
                     };
                 });
                 localStorage.setItem('servers', JSON.stringify(serverList.value));
-                currentServer.value = serverList.value.length > 0 ? serverList.value[0].items[0] : '';
+                currentServer.value = serverList.value.length > 0 ? serverList.value[0]?.children[0] : '';
                 localStorage.setItem('server', JSON.stringify(50));
+
+                // worker.postMessage({ action: 'preloadData', data: serverList.value });
+                const start = proxy
+                    .$moment()
+                    .subtract(3 - 1, 'days')
+                    .format('YYYY-MM-DD');
+                const end = proxy.$moment().format('YYYY-MM-DD');
+                worker.postMessage({
+                    action: 'preloadData',
+                    data: [
+                        {
+                            id: 1,
+                            sl: 1200,
+                            name: '群雄并起',
+                            ip: '49.232.128.232'
+                        }
+                    ],
+                    params: {
+                        start,
+                        end
+                    }
+                });
+                worker.onmessage = (e) => {
+                    console.log(e.data);
+                    // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
+                    responseStore.setResData(e.data)
+                };
             });
         } else {
             showServers.value = false;
@@ -109,7 +141,7 @@ const isOutsideClicked = (event) => {
 };
 
 const serverChange = (e) => {
-    localStorage.setItem('server', JSON.stringify(e.children?e.data:e.data));
+    localStorage.setItem('server', JSON.stringify(e.children ? e.data : e.data));
     bus.emit('serverChange', e);
 };
 </script>

@@ -3,6 +3,11 @@ import { onMounted, ref, watch, onBeforeUnmount, getCurrentInstance } from 'vue'
 import { useLayout } from '@/layout/composables/layout';
 import ProductService from '@/service/ProductService';
 import { useEventBus } from '@vueuse/core';
+import { useResponseStore } from '@/stores/modules/response';
+
+const responseStore = useResponseStore();
+const worker = new Worker('web-workers/worker.js');
+
 const bus = useEventBus('server-selected');
 const { proxy } = getCurrentInstance();
 const { layoutConfig } = useLayout();
@@ -34,6 +39,7 @@ const barOptions = ref(null);
 const productService = new ProductService();
 const timer = ref(null);
 const ip = ref('getCurrentDomain');
+const currentIp = ref();
 
 onMounted(() => {
     /**
@@ -45,155 +51,82 @@ onMounted(() => {
 
     getStatisticsData();
     bus.on((name, data) => {
-        console.log('daaa', data);
         if (data?.children) {
             // 计算全部服务器的和
             calAllData(data);
         } else {
-            ip.value = data?.data;
             if (name == 'serverChange') {
-                getStatisticsData();
-                const start = proxy.$moment().subtract(2, 'days').format('YYYY-MM-DD');
-                const end = proxy.$moment().format('YYYY-MM-DD');
-                initData(start, end);
+                calDataByIp(data);
+                currentIp.value = data.key;
             }
         }
     });
 });
 
-const calAllData = (data) => {
+const calAllData = () => {
+    const { data } = responseStore.allReponseData;
     let d1 = 0;
     let d2 = 0;
     let d3 = 0;
     let d4 = 0;
     let d5 = 0;
-    Array.isArray(data.children) &&
-        data.children.map((item) => {
-            productService.getOnlineUsers({ ip: ip.data }).then((res) => {
-                d1 += res.login || 0;
-                d2 += res.all || 0;
-            });
-            productService.getNewUser({ ip: ip.data }).then((res) => {
-                d3 += res || 0;
-            });
-            productService.getNewAmount({ ip: ip.data }).then((res) => {
-                d4 += res.today || 0;
-                d5 += res.all || 0;
+    let _charts = {};
+    // 将Map对象转换为数组
+    const arr = Array.from(data, ([key, value]) => ({ key, value }));
+    Array.isArray(arr) &&
+        arr.map((item, index) => {
+            // 统计数据
+            d1 += item.value.nums['d1'];
+            d2 += item.value.nums['d2'];
+            d3 += item.value.nums['d3'];
+            d4 += item.value.nums['d4'];
+            d5 += item.value.nums['d5'];
+            // 图表数据
+
+            Object.keys(item.value.charts).forEach((c) => {
+                if (!_charts[c]) {
+                    _charts[c] = {};
+                }
+                _charts[c]['zb'] = item.value.charts[c]['zb'];
+                if (!Number(_charts[c]['tap'])) {
+                    _charts[c]['tap'] = 0;
+                }
+                if (!Number(_charts[c]['xxl'])) {
+                    _charts[c]['xxl'] = 0;
+                }
+                if (!Number(_charts[c]['je'])) {
+                    _charts[c]['je'] = 0;
+                }
+                if (!Number(_charts[c]['weixin'])) {
+                    _charts[c]['weixin'] = 0;
+                }
+
+                _charts[c]['tap'] += item.value.charts[c]['tap'];
+                _charts[c]['xxl'] += item.value.charts[c]['xxl'];
+                _charts[c]['je'] += item.value.charts[c]['je'];
+                _charts[c]['weixin'] += item.value.charts[c]['weixin'];
             });
         });
+
     onLineNumber.value = d1;
     totalUserNumber.value = d2;
     newUserNumber.value = d3;
     newAmountNumber.value = d4;
     totalAmountNumber.value = d5;
+
+    initChartData(_charts);
 };
 
-const initData = (kssj, jssj) => {
-    const bardatatemp = {
-        labels: [],
-        datasets: [
-            {
-                label: 'TAP',
-                backgroundColor: 'rgba(99, 102 ,241,0.5)',
-                borderColor: documentStyle.getPropertyValue('--indigo-500'),
-                borderRadius: 3,
-                borderWidth: 1,
-                data: []
-            },
-            {
-                label: '微信小程序',
-                backgroundColor: 'rgba(20 ,184, 166,0.5)',
-                borderColor: documentStyle.getPropertyValue('--teal-500'),
-                borderRadius: 3,
-                borderWidth: 1,
-                data: []
-            },
-            {
-                label: '信息流',
-                backgroundColor: 'rgba(249, 115 ,22,0.5)',
-                borderColor: documentStyle.getPropertyValue('--orange-500'),
-                borderRadius: 3,
-                borderWidth: 1,
-                data: []
-            }
-        ]
-    };
-    const xData_t = [];
-    const userData_t = [];
-    const moneyData_t = [];
-    productService
-        .getPlatformData({
-            kssj: kssj,
-            jssj: jssj,
-            ip: ip.value
-        })
-        .then((res) => {
-            if (Array.isArray(res)) {
-                res.map((item) => {
-                    const total_user = item.tap + item.xxl + item.weixin;
-                    bardatatemp.labels.push(item.zb);
-                    bardatatemp.datasets[0].data.push(item.tap);
-                    bardatatemp.datasets[1].data.push(item.weixin);
-                    bardatatemp.datasets[2].data.push(item.xxl);
-
-                    xData_t.push(proxy.$moment(item.zb).format('YYYY-MM-DD'));
-                    userData_t.push(total_user || 0);
-                    moneyData_t.push(item.je || 0);
-                });
-                xData.value = xData_t;
-                userData.value = userData_t;
-                moneyData.value = moneyData_t;
-                barData.value = bardatatemp;
-
-                setChart();
-            }
-        });
-};
-
-watch(
-    () => currentDay.value,
-    (nv) => {
-        const start = proxy
-            .$moment()
-            .subtract(nv - 1, 'days')
-            .format('YYYY-MM-DD');
-        const end = proxy.$moment().format('YYYY-MM-DD');
-        initData(start, end);
-        time.value = '';
-    },
-    {
-        immediate: true
-    }
-);
-
-watch(
-    () => time.value,
-    (nv) => {
-        const [start, end] = nv;
-        start && end && initData(proxy.$moment(start).format('YYYY-MM-DD'), proxy.$moment(end).format('YYYY-MM-DD'));
-    }
-);
-onBeforeUnmount(() => {
-    clearInterval(timer.value);
-});
-const getStatisticsData = async () => {
-    productService.getOnlineUsers({ ip: ip.value }).then((res) => {
-        onLineNumber.value = res.login || '0';
-        totalUserNumber.value = res.all || '0';
-    });
-    productService.getNewUser({ ip: ip.value }).then((res) => {
-        newUserNumber.value = res || '0';
-    });
-    productService.getNewAmount({ ip: ip.value }).then((res) => {
-        newAmountNumber.value = res.today || '0';
-        totalAmountNumber.value = res.all || '0';
-    });
-};
-const setColorOptions = () => {
-    documentStyle = getComputedStyle(document.documentElement);
-    textColor = documentStyle.getPropertyValue('--text-color');
-    textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
-    surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+const calDataByIp = (params) => {
+    const { data } = responseStore.allReponseData;
+    console.log('responseStore.allReponseData;',responseStore.allReponseData)
+    const res = data.get('http://' + params.key);
+    onLineNumber.value = res?.nums.d1;
+    totalUserNumber.value = res?.nums.d2;
+    newUserNumber.value = res?.nums.d3;
+    newAmountNumber.value = res?.nums.d4;
+    totalAmountNumber.value = res?.nums.d5;
+    initChartData(res?.charts);
 };
 
 const setChart = () => {
@@ -317,6 +250,115 @@ const setChart = () => {
             }
         }
     };
+};
+
+const initChartData = (data) => {
+    const bardatatemp = {
+        labels: [],
+        datasets: [
+            {
+                label: 'TAP',
+                backgroundColor: 'rgba(99, 102 ,241,0.5)',
+                borderColor: documentStyle.getPropertyValue('--indigo-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: []
+            },
+            {
+                label: '微信小程序',
+                backgroundColor: 'rgba(20 ,184, 166,0.5)',
+                borderColor: documentStyle.getPropertyValue('--teal-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: []
+            },
+            {
+                label: '信息流',
+                backgroundColor: 'rgba(249, 115 ,22,0.5)',
+                borderColor: documentStyle.getPropertyValue('--orange-500'),
+                borderRadius: 3,
+                borderWidth: 1,
+                data: []
+            }
+        ]
+    };
+    const xData_t = [];
+    const userData_t = [];
+    const moneyData_t = [];
+    Object.keys(data).forEach((item) => {
+        const total_user = data[item].tap + data[item].xxl + data[item].weixin;
+        bardatatemp.labels.push(data[item].zb);
+        bardatatemp.datasets[0].data.push(data[item].tap);
+        bardatatemp.datasets[1].data.push(data[item].weixin);
+        bardatatemp.datasets[2].data.push(data[item].xxl);
+
+        xData_t.push(proxy.$moment(data[item].zb).format('YYYY-MM-DD'));
+        userData_t.push(total_user || 0);
+        moneyData_t.push(data[item].je || 0);
+    });
+    xData.value = xData_t;
+    userData.value = userData_t;
+    moneyData.value = moneyData_t;
+    barData.value = bardatatemp;
+
+    setChart();
+};
+
+watch(
+    () => currentDay.value,
+    (nv) => {
+        const start = proxy
+            .$moment()
+            .subtract(nv - 1, 'days')
+            .format('YYYY-MM-DD');
+        const end = proxy.$moment().format('YYYY-MM-DD');
+        worker.postMessage({
+            action: 'preloadData',
+            data: [
+                {
+                    ip: currentIp.value
+                }
+            ],
+            params: {
+                start,
+                end
+            }
+        });
+        if (currentIp.value !== 'all') {
+            calDataByIp({ key: currentIp.value });
+        }
+        time.value = '';
+    }
+);
+
+watch(
+    () => time.value,
+    (nv) => {
+        const [start, end] = nv;
+        // start && end && initChartData(proxy.$moment(start).format('YYYY-MM-DD'), proxy.$moment(end).format('YYYY-MM-DD'));
+    }
+);
+onBeforeUnmount(() => {
+    clearInterval(timer.value);
+});
+const getStatisticsData = async () => {
+    productService.getOnlineUsers({ ip: ip.value }).then((res) => {
+        onLineNumber.value = res.login || '0';
+        totalUserNumber.value = res.all || '0';
+    });
+    productService.getNewUser({ ip: ip.value }).then((res) => {
+        newUserNumber.value = res || '0';
+    });
+    productService.getNewAmount({ ip: ip.value }).then((res) => {
+        newAmountNumber.value = res.today || '0';
+        totalAmountNumber.value = res.all || '0';
+    });
+};
+const setColorOptions = () => {
+    documentStyle = getComputedStyle(document.documentElement);
+    textColor = documentStyle.getPropertyValue('--text-color');
+    textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+    surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 };
 
 watch(

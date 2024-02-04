@@ -77,7 +77,7 @@ onBeforeMount(() => {
         </div>
         <div class="col-12">
             <div class="card">
-                <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" scrollHeight="400px" scrollDirection="both" class="mt-3">
+                <DataTable :value="msgList" :scrollable="true" :totalRecords="total" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" scrollHeight="500px" scrollDirection="both" class="mt-3">
                     <template #header>
                         <div class="flex justify-content-between">
                             <Button type="button" icon="pi pi-plus" label="新增" outlined @click="openModal" />

@@ -39,7 +39,7 @@ const barOptions = ref(null);
 const productService = new ProductService();
 const timer = ref(null);
 const ip = ref('getCurrentDomain');
-const currentIp = ref();
+const currentIp = ref('all');
 
 onMounted(() => {
     /**
@@ -53,18 +53,23 @@ onMounted(() => {
     bus.on((name, data) => {
         if (data?.children) {
             // 计算全部服务器的和
-            calAllData(data);
+            calAllData();
         } else {
             if (name == 'serverChange') {
                 calDataByIp(data);
                 currentIp.value = data.key;
             }
         }
+
+        if (name == 'dataLoaded') {
+            console.log('data', data);
+            calAllData(data);
+        }
     });
 });
 
-const calAllData = () => {
-    const { data } = responseStore.allReponseData;
+const calAllData = (datas = null) => {
+    const { data } = datas || responseStore.allReponseData;
     let d1 = 0;
     let d2 = 0;
     let d3 = 0;
@@ -119,7 +124,7 @@ const calAllData = () => {
 
 const calDataByIp = (params) => {
     const { data } = responseStore.allReponseData;
-    console.log('responseStore.allReponseData;',responseStore.allReponseData)
+    console.log('responseStore.allReponseData;', responseStore.allReponseData);
     const res = data.get('http://' + params.key);
     onLineNumber.value = res?.nums.d1;
     totalUserNumber.value = res?.nums.d2;
@@ -312,18 +317,36 @@ watch(
             .subtract(nv - 1, 'days')
             .format('YYYY-MM-DD');
         const end = proxy.$moment().format('YYYY-MM-DD');
-        worker.postMessage({
-            action: 'preloadData',
-            data: [
-                {
-                    ip: currentIp.value
+       if (currentIp.value !== 'all') {
+            worker.postMessage({
+                action: 'preloadData',
+                data: [
+                    {
+                        ip: currentIp.value
+                    }
+                ],
+                params: {
+                    start,
+                    end
                 }
-            ],
-            params: {
-                start,
-                end
-            }
-        });
+            });
+        }else{
+        const ips = JSON.parse(localStorage.getItem('serverList'));
+          worker.postMessage({
+                action: 'preloadData',
+                data:JSON.parse(JSON.stringify(ips)),
+                params: {
+                    start,
+                    end
+                }
+            });  
+        }
+        worker.onmessage = (e) => {
+            console.log('0-0-0-0', e.data);
+            calAllData(e.data);
+            // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
+            responseStore.setResData(e.data);
+        };
         if (currentIp.value !== 'all') {
             calDataByIp({ key: currentIp.value });
         }
@@ -335,6 +358,38 @@ watch(
     () => time.value,
     (nv) => {
         const [start, end] = nv;
+        if (!nv) return;
+        if (currentIp.value !== 'all') {
+            worker.postMessage({
+                action: 'preloadData',
+                data: [
+                    {
+                        ip: currentIp.value
+                    }
+                ],
+                params: {
+                    start,
+                    end
+                }
+            });
+        }else{
+        const ips = JSON.parse(localStorage.getItem('serverList'));
+          worker.postMessage({
+                action: 'preloadData',
+                data:JSON.parse(JSON.stringify(ips)),
+                params: {
+                    start,
+                    end
+                }
+            });  
+        }
+
+        worker.onmessage = (e) => {
+            console.log('0-0-0-0-jkjkjk', e.data);
+            calAllData(e.data);
+            // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
+            responseStore.setResData(e.data);
+        };
         // start && end && initChartData(proxy.$moment(start).format('YYYY-MM-DD'), proxy.$moment(end).format('YYYY-MM-DD'));
     }
 );

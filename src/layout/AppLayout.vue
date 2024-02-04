@@ -22,6 +22,8 @@ const outsideClickListener = ref(null);
 const currentServer = ref('');
 const expandedKeys = ref({ 0: true });
 const selectionKeys = ref({ 0: true });
+
+const servers = ref([]);
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
         bindOutsideClickListener();
@@ -38,6 +40,7 @@ watch(
             showServers.value = true;
 
             productService.getMenuData().then((res) => {
+                servers.value = res;
                 // res每50个一组
                 const groupedData = res.reduce((result, item, index) => {
                     const chunkIndex = Math.floor(index / 50);
@@ -65,6 +68,7 @@ watch(
                     };
                 });
                 localStorage.setItem('servers', JSON.stringify(serverList.value));
+                localStorage.setItem('serverList', JSON.stringify(servers.value));
                 currentServer.value = serverList.value.length > 0 ? serverList.value[0]?.children[0] : '';
                 localStorage.setItem('server', JSON.stringify(50));
 
@@ -76,23 +80,24 @@ watch(
                 const end = proxy.$moment().format('YYYY-MM-DD');
                 worker.postMessage({
                     action: 'preloadData',
-                    data: [
-                        {
-                            id: 1,
-                            sl: 1200,
-                            name: '群雄并起',
-                            ip: '49.232.128.232'
-                        }
-                    ],
+                    // data: [
+                    //     {
+                    //         id: 1,
+                    //         sl: 1200,
+                    //         name: '群雄并起',
+                    //         ip: '49.232.128.232'
+                    //     }
+                    // ],
+                    data: JSON.parse(JSON.stringify(servers.value)),
                     params: {
                         start,
                         end
                     }
                 });
                 worker.onmessage = (e) => {
-                    console.log(e.data);
                     // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
-                    responseStore.setResData(e.data)
+                    responseStore.setResData(e.data);
+                    bus.emit('dataLoaded', e.data);
                 };
             });
         } else {

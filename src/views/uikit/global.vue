@@ -35,16 +35,19 @@ const formData = reactive({
     jl5: '',
     server: ''
 });
-
 const servers = ref([]);
 onMounted(() => {
-    servers.value = localStorage.getItem('servers') ? JSON.parse(localStorage.getItem('servers'))[0].items : [];
-    console.log(servers.value);
+    getServerList();
     productService.getRewardConfig({ xtpz: 'djpz' }).then((res) => {
         console.log(res);
         djpz.value = JSON.parse(res.pzz);
     });
 });
+const getServerList = () => {
+    productService.getMenuData().then((s = []) => {
+        servers.value = s;
+    });
+};
 
 const search = (event) => {
     items.value = djpz.value.filter((item) => {
@@ -57,30 +60,33 @@ const send = () => {
         return;
     }
 
-    const content = range.value == '指定用户'? {
-        bt: formData.bt,
-        cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
-        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
-        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
-        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
-        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
-        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
-        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
-        userId: formData.userId,
-        xxnr: formData.xxnr,
-        yd: 0
-    }:{
-        bt: formData.bt,
-        cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
-        gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
-        jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
-        jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
-        jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
-        jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
-        jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
-        xxnr: formData.xxnr,
-        yd: 0
-    }
+    const content =
+        range.value == '指定用户'
+            ? {
+                  bt: formData.bt,
+                  cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
+                  gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
+                  jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
+                  jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
+                  jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
+                  jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
+                  jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
+                  userId: formData.userId,
+                  xxnr: formData.xxnr,
+                  yd: 0
+              }
+            : {
+                  bt: formData.bt,
+                  cjsj: proxy.$moment().format('YYYY-MM-DD HH:mm:ss'),
+                  gqsj: proxy.$moment(formData.gqsj).format('YYYY-MM-DD HH:mm:ss'),
+                  jl1: formData.jl1.name ? formData.jl1.name + '*' + num.n1 : '',
+                  jl2: formData.jl2.name ? formData.jl2.name + '*' + num.n2 : '',
+                  jl3: formData.jl3.name ? formData.jl3.name + '*' + num.n3 : '',
+                  jl4: formData.jl4.name ? formData.jl4.name + '*' + num.n4 : '',
+                  jl5: formData.jl5.name ? formData.jl5.name + '*' + num.n5 : '',
+                  xxnr: formData.xxnr,
+                  yd: 0
+              };
 
     // const ip = window.location.protocol + '//' + window.location.host;
     const ip = '';
@@ -94,28 +100,26 @@ const send = () => {
     });
     stompClient.value = [];
 
-       servers.value.map((s, i) => {
-            console.log(';l;', `http://${s.ip}:8099/endpoint-websocket`);
-            const socket = new SockJS(`http://${s.ip}:8099/endpoint-websocket`); //连接上端点(基站)
-            const SC = Stomp.over(socket); //用stom进行包装，规范协议
-            SC.connect({}, (con) => {
-                console.log(con, '连接毁掉');
-                if (con.command == 'CONNECTED') {
-                    console.log('连接成功>..');
-                    SC.send('/app/public/game_rank', {}, JSON.stringify({content:formData.xxnr}));
-                    stompClient.value.push(SC);
-                }
-                SC.subscribe('/topic/game_rank', function (result) {
-                    console.log('result=' + result);
-                }),
-                    (e) => {
-                        console.log(e);
-                    };
-            });
+    servers.value.map((s, i) => {
+        console.log(';l;', `http://${s.ip}:8099/endpoint-websocket`);
+        const socket = new SockJS(`http://${s.ip}:8099/endpoint-websocket`); //连接上端点(基站)
+        const SC = Stomp.over(socket); //用stom进行包装，规范协议
+        SC.connect({}, (con) => {
+            console.log(con, '连接毁掉');
+            if (con.command == 'CONNECTED') {
+                console.log('连接成功>..');
+                SC.send('/app/public/game_rank', {}, JSON.stringify({ content: `<color=#ffffff>${formData.xxnr}</color>` }));
+                stompClient.value.push(SC);
+            }
+            SC.subscribe('/topic/game_rank', function (result) {
+                console.log('result=' + result);
+            }),
+                (e) => {
+                    console.log(e);
+                };
         });
-    
+    });
 
-    
     if (!formData.xxnr) {
         toast.add({ severity: 'error', summary: '提示', detail: '通报内容必输', group: 'tl', life: 3000 });
         return;

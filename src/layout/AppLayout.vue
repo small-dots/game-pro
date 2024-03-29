@@ -33,79 +33,79 @@ watch(isSidebarActive, (newVal) => {
 });
 
 //监听路由
-watch(
-    () => router.currentRoute.value.path,
-    (newVal) => {
-        if (newVal == '/uikit/charts') {
-            showServers.value = true;
+// watch(
+//     () => router.currentRoute.value.path,
+//     (newVal) => {
+//         if (newVal == '/uikit/charts') {
+//             showServers.value = true;
 
-            productService.getMenuData().then((res) => {
-                servers.value = res;
-                // res每50个一组
-                const groupedData = res.reduce((result, item, index) => {
-                    const chunkIndex = Math.floor(index / 50);
+//             productService.getMenuData().then((res) => {
+//                 servers.value = res;
+//                 // res每50个一组
+//                 const groupedData = res.reduce((result, item, index) => {
+//                     const chunkIndex = Math.floor(index / 50);
 
-                    if (!result[chunkIndex]) {
-                        result[chunkIndex] = [];
-                    }
+//                     if (!result[chunkIndex]) {
+//                         result[chunkIndex] = [];
+//                     }
 
-                    result[chunkIndex].push({
-                        label: item.name,
-                        data: item.ip,
-                        key: item.ip
-                    });
+//                     result[chunkIndex].push({
+//                         label: item.name,
+//                         data: item.ip,
+//                         key: item.ip
+//                     });
 
-                    return result;
-                }, []);
+//                     return result;
+//                 }, []);
 
-                serverList.value = groupedData.map((item, index) => {
-                    return {
-                        label: `区服${index + 1}-区服${(index + 1) * 50}`,
-                        data: 50,
-                        children: item,
-                        key: index,
-                        icon: 'pi pi-bookmark-fill'
-                    };
-                });
-                localStorage.setItem('servers', JSON.stringify(serverList.value));
-                localStorage.setItem('serverList', JSON.stringify(servers.value));
-                currentServer.value = serverList.value.length > 0 ? serverList.value[0]?.children[0] : '';
-                localStorage.setItem('server', JSON.stringify(50));
+//                 serverList.value = groupedData.map((item, index) => {
+//                     return {
+//                         label: `区服${index + 1}-区服${(index + 1) * 50}`,
+//                         data: 50,
+//                         children: item,
+//                         key: index,
+//                         icon: 'pi pi-bookmark-fill'
+//                     };
+//                 });
+//                 localStorage.setItem('servers', JSON.stringify(serverList.value));
+//                 localStorage.setItem('serverList', JSON.stringify(servers.value));
+//                 currentServer.value = serverList.value.length > 0 ? serverList.value[0]?.children[0] : '';
+//                 localStorage.setItem('server', JSON.stringify(50));
 
-                // worker.postMessage({ action: 'preloadData', data: serverList.value });
-                const start = proxy
-                    .$moment()
-                    .subtract(3 - 1, 'days')
-                    .format('YYYY-MM-DD');
-                const end = proxy.$moment().format('YYYY-MM-DD');
-                worker.postMessage({
-                    action: 'preloadData',
-                    // data: [
-                    //     {
-                    //         id: 1,
-                    //         sl: 1200,
-                    //         name: '群雄并起',
-                    //         ip: '49.232.128.232'
-                    //     }
-                    // ],
-                    data: JSON.parse(JSON.stringify(servers.value)),
-                    params: {
-                        start,
-                        end
-                    }
-                });
-                worker.onmessage = (e) => {
-                    // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
-                    responseStore.setResData(e.data);
-                    bus.emit('dataLoaded', e.data);
-                };
-            });
-        } else {
-            showServers.value = false;
-        }
-    },
-    { immediate: true, deep: true }
-);
+//                 // worker.postMessage({ action: 'preloadData', data: serverList.value });
+//                 const start = proxy
+//                     .$moment()
+//                     .subtract(3 - 1, 'days')
+//                     .format('YYYY-MM-DD');
+//                 const end = proxy.$moment().format('YYYY-MM-DD');
+//                 worker.postMessage({
+//                     action: 'preloadData',
+//                     // data: [
+//                     //     {
+//                     //         id: 1,
+//                     //         sl: 1200,
+//                     //         name: '群雄并起',
+//                     //         ip: '49.232.128.232'
+//                     //     }
+//                     // ],
+//                     data: JSON.parse(JSON.stringify(servers.value)),
+//                     params: {
+//                         start,
+//                         end
+//                     }
+//                 });
+//                 worker.onmessage = (e) => {
+//                     // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
+//                     responseStore.setResData(e.data);
+//                     bus.emit('dataLoaded', e.data);
+//                 };
+//             });
+//         } else {
+//             showServers.value = false;
+//         }
+//     },
+//     { immediate: true, deep: true }
+// );
 
 const containerClass = computed(() => {
     return {
@@ -159,17 +159,9 @@ const serverChange = (e) => {
         </div>
         <div class="layout-main-container">
             <div class="layout-main" :style="{ display: showServers ? 'flex' : '' }">
-                <div class="server-list" v-if="showServers">
-                    <!-- <Listbox :options="serverList" @change="serverChange" v-model="currentServer" optionLabel="name" optionGroupLabel="label" optionGroupChildren="items" class="w-full md:w-14rem" listStyle="max-height:250px">
-                        <template #optiongroup="slotProps">
-                            <div class="flex align-items-center">
-                                <i class="pi pi-bookmark-fill"></i>
-                                <div>{{ slotProps.option.label }}</div>
-                            </div>
-                        </template>
-                    </Listbox> -->
+                <!-- <div class="server-list" v-if="showServers">
                     <Tree v-model:expandedKeys="expandedKeys" v-model:selectionKeys="selectionKeys" @node-select="serverChange" :value="serverList" selectionMode="single" class="w-full md:w-30rem"></Tree>
-                </div>
+                </div> -->
                 <router-view></router-view>
             </div>
             <app-footer></app-footer>

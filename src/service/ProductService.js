@@ -20,13 +20,11 @@ export default class ProductService {
     }
 
     /**
-     * 获取在线人数
+     * 获取在线人数|总人数
      * @returns 
      */
-    getOnlineUsers(data) {
-        const ip = data?.ip
-        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
-        return fetch(newurl + '/api/tj/login/count')
+    getOnlineUsers() {
+        return fetch(url + '/api/tj/login/count')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -60,11 +58,11 @@ export default class ProductService {
      */
     deleteNotice(query) {
         const queryParams = Object.keys(query)
-        .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
-        .join('&');
-    return fetch(url + '/api/gg/delete?' + queryParams)
-        .then((res) => res.json())
-        .then((d) => d.code);
+            .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
+            .join('&');
+        return fetch(url + '/api/gg/delete?' + queryParams)
+            .then((res) => res.json())
+            .then((d) => d.code);
     }
 
     /**
@@ -89,9 +87,7 @@ export default class ProductService {
      * 当日新增用户
      */
     getNewUser(data) {
-        const ip = data?.ip
-        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
-        return fetch(newurl + '/api/tj/today/added')
+        return fetch(url + '/api/tj/today/added')
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -100,9 +96,11 @@ export default class ProductService {
      * 当日充值数据
      */
     getNewAmount(data) {
-        const ip = data?.ip
-        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
-        return fetch(newurl + '/api/tj/today/amount')
+        const queryParams = Object.keys(data)
+            .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
+            .join('&');
+
+        return fetch(url + '/api/tj/today/amount?' + queryParams)
             .then((res) => res.json())
             .then((d) => d.data);
     }
@@ -200,9 +198,7 @@ export default class ProductService {
      * 统计平台数据
      */
     getPlatformData(data) {
-        const ip = data?.ip
-        const newurl = ip == 'getCurrentDomain' ? window.location.protocol + '//' + window.location.host : "http://" + ip
-        return fetch(newurl + '/api/tj/plat', {
+        return fetch(url + '/api/tj/plat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

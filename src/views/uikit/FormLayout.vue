@@ -37,14 +37,16 @@ const formData = reactive({
 
 const servers = ref([]);
 onMounted(() => {
-    servers.value = localStorage.getItem('servers') ? JSON.parse(localStorage.getItem('servers'))[0].items : [];
-    console.log(servers.value);
+    getServerList();
     productService.getRewardConfig({ xtpz: 'djpz' }).then((res) => {
-        console.log(res);
         djpz.value = JSON.parse(res.pzz);
     });
 });
-
+const getServerList = () => {
+    productService.getMenuData().then((s = []) => {
+        servers.value = s;
+    });
+};
 const search = (event) => {
     items.value = djpz.value.filter((item) => {
         return item.nameZn.toLowerCase().includes(event.query.toLowerCase());

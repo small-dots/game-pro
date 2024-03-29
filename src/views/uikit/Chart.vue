@@ -40,98 +40,42 @@ const productService = new ProductService();
 const timer = ref(null);
 const ip = ref('getCurrentDomain');
 const currentIp = ref('all');
+const selectedServer = ref();
+const serverList = ref([]);
 
 onMounted(() => {
+    getServerList();
     /**
      * 获取统计数据,每个十分钟轮询一次
      */
     timer.value = setInterval(() => {
         getStatisticsData();
     }, 1000 * 60 * 10);
-
     getStatisticsData();
-    bus.on((name, data) => {
-        if (data?.children) {
-            // 计算全部服务器的和
-            calAllData();
-        } else {
-            if (name == 'serverChange') {
-                calDataByIp(data);
-                currentIp.value = data.key;
-            }
-        }
-
-        if (name == 'dataLoaded') {
-            console.log('data', data);
-            calAllData(data);
-        }
-    });
 });
 
-const calAllData = (datas = null) => {
-    const { data } = datas || responseStore.allReponseData;
-    let d1 = 0;
-    let d2 = 0;
-    let d3 = 0;
-    let d4 = 0;
-    let d5 = 0;
-    let _charts = {};
-    // 将Map对象转换为数组
-    const arr = Array.from(data, ([key, value]) => ({ key, value }));
-    Array.isArray(arr) &&
-        arr.map((item, index) => {
-            // 统计数据
-            d1 += item.value.nums['d1'];
-            d2 += item.value.nums['d2'];
-            d3 += item.value.nums['d3'];
-            d4 += item.value.nums['d4'];
-            d5 += item.value.nums['d5'];
-            // 图表数据
-
-            Object.keys(item.value.charts).forEach((c) => {
-                if (!_charts[c]) {
-                    _charts[c] = {};
-                }
-                _charts[c]['zb'] = item.value.charts[c]['zb'];
-                if (!Number(_charts[c]['tap'])) {
-                    _charts[c]['tap'] = 0;
-                }
-                if (!Number(_charts[c]['xxl'])) {
-                    _charts[c]['xxl'] = 0;
-                }
-                if (!Number(_charts[c]['je'])) {
-                    _charts[c]['je'] = 0;
-                }
-                if (!Number(_charts[c]['weixin'])) {
-                    _charts[c]['weixin'] = 0;
-                }
-
-                _charts[c]['tap'] += item.value.charts[c]['tap'];
-                _charts[c]['xxl'] += item.value.charts[c]['xxl'];
-                _charts[c]['je'] += item.value.charts[c]['je'];
-                _charts[c]['weixin'] += item.value.charts[c]['weixin'];
-            });
-        });
-
-    onLineNumber.value = d1;
-    totalUserNumber.value = d2;
-    newUserNumber.value = d3;
-    newAmountNumber.value = d4;
-    totalAmountNumber.value = d5;
-
-    initChartData(_charts);
+const getAmount = (id) => {
+    productService.getNewAmount({ fwqId: id }).then((res) => {
+        newAmountNumber.value = Math.floor(res?.today / 100);
+        totalAmountNumber.value = Math.floor(res?.all / 100);
+    });
 };
-
-const calDataByIp = (params) => {
-    const { data } = responseStore.allReponseData;
-    console.log('responseStore.allReponseData;', responseStore.allReponseData);
-    const res = data.get('http://' + params.key);
-    onLineNumber.value = res?.nums.d1;
-    totalUserNumber.value = res?.nums.d2;
-    newUserNumber.value = res?.nums.d3;
-    newAmountNumber.value = res?.nums.d4;
-    totalAmountNumber.value = res?.nums.d5;
-    initChartData(res?.charts);
+const getChartData = (ip, s = '', e = '') => {
+    productService
+        .getPlatformData({
+            fwqId: ip,
+            kssj:
+                s ||
+                proxy
+                    .$moment()
+                    .subtract(currentDay.value - 1, 'days')
+                    .format('YYYY-MM-DD'),
+            jssj: e || proxy.$moment().format('YYYY-MM-DD')
+        })
+        .then((res) => {
+            console.log(res);
+            initChartData(res);
+        });
 };
 
 const setChart = () => {
@@ -290,16 +234,16 @@ const initChartData = (data) => {
     const xData_t = [];
     const userData_t = [];
     const moneyData_t = [];
-    Object.keys(data).forEach((item) => {
-        const total_user = data[item].tap + data[item].xxl + data[item].weixin;
-        bardatatemp.labels.push(data[item].zb);
-        bardatatemp.datasets[0].data.push(data[item].tap);
-        bardatatemp.datasets[1].data.push(data[item].weixin);
-        bardatatemp.datasets[2].data.push(data[item].xxl);
+    data.forEach((item) => {
+        const total_user = item.tap + item.xxl + item.weixin;
+        bardatatemp.labels.push(item.zb);
+        bardatatemp.datasets[0].data.push(item.tap);
+        bardatatemp.datasets[1].data.push(item.weixin);
+        bardatatemp.datasets[2].data.push(item.xxl);
 
-        xData_t.push(proxy.$moment(data[item].zb).format('YYYY-MM-DD'));
+        xData_t.push(proxy.$moment(item.zb).format('YYYY-MM-DD'));
         userData_t.push(total_user || 0);
-        moneyData_t.push(data[item].je || 0);
+        moneyData_t.push(Math.floor(Number(item.je) / 100) || 0);
     });
     xData.value = xData_t;
     userData.value = userData_t;
@@ -309,6 +253,15 @@ const initChartData = (data) => {
     setChart();
 };
 
+const getServerList = () => {
+    productService.getMenuData().then((s = []) => {
+        serverList.value = s;
+        const [server] = s;
+        selectedServer.value = server?.id;
+        getAmount(server?.id);
+        getChartData(server?.id);
+    });
+};
 watch(
     () => currentDay.value,
     (nv) => {
@@ -317,39 +270,8 @@ watch(
             .subtract(nv - 1, 'days')
             .format('YYYY-MM-DD');
         const end = proxy.$moment().format('YYYY-MM-DD');
-       if (currentIp.value !== 'all') {
-            worker.postMessage({
-                action: 'preloadData',
-                data: [
-                    {
-                        ip: currentIp.value
-                    }
-                ],
-                params: {
-                    start,
-                    end
-                }
-            });
-        }else{
-        const ips = JSON.parse(localStorage.getItem('serverList'));
-          worker.postMessage({
-                action: 'preloadData',
-                data:JSON.parse(JSON.stringify(ips)),
-                params: {
-                    start,
-                    end
-                }
-            });  
-        }
-        worker.onmessage = (e) => {
-            console.log('0-0-0-0', e.data);
-            calAllData(e.data);
-            // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
-            responseStore.setResData(e.data);
-        };
-        if (currentIp.value !== 'all') {
-            calDataByIp({ key: currentIp.value });
-        }
+        getChartData(selectedServer.value, start, end);
+
         time.value = '';
     }
 );
@@ -359,54 +281,19 @@ watch(
     (nv) => {
         const [start, end] = nv;
         if (!nv) return;
-        if (currentIp.value !== 'all') {
-            worker.postMessage({
-                action: 'preloadData',
-                data: [
-                    {
-                        ip: currentIp.value
-                    }
-                ],
-                params: {
-                    start,
-                    end
-                }
-            });
-        }else{
-        const ips = JSON.parse(localStorage.getItem('serverList'));
-          worker.postMessage({
-                action: 'preloadData',
-                data:JSON.parse(JSON.stringify(ips)),
-                params: {
-                    start,
-                    end
-                }
-            });  
-        }
-
-        worker.onmessage = (e) => {
-            console.log('0-0-0-0-jkjkjk', e.data);
-            calAllData(e.data);
-            // 接受到全部数据后，缓存起来，当点击左侧的服务器时，就返回对应服务器的数据
-            responseStore.setResData(e.data);
-        };
-        // start && end && initChartData(proxy.$moment(start).format('YYYY-MM-DD'), proxy.$moment(end).format('YYYY-MM-DD'));
+        getChartData(selectedServer.value, start, end);
     }
 );
 onBeforeUnmount(() => {
     clearInterval(timer.value);
 });
 const getStatisticsData = async () => {
-    productService.getOnlineUsers({ ip: ip.value }).then((res) => {
+    productService.getOnlineUsers({}).then((res) => {
         onLineNumber.value = res.login || '0';
         totalUserNumber.value = res.all || '0';
     });
-    productService.getNewUser({ ip: ip.value }).then((res) => {
+    productService.getNewUser({}).then((res) => {
         newUserNumber.value = res || '0';
-    });
-    productService.getNewAmount({ ip: ip.value }).then((res) => {
-        newAmountNumber.value = res.today || '0';
-        totalAmountNumber.value = res.all || '0';
     });
 };
 const setColorOptions = () => {
@@ -414,6 +301,10 @@ const setColorOptions = () => {
     textColor = documentStyle.getPropertyValue('--text-color');
     textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
     surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+};
+const serverChange = (e) => {
+    getAmount(e.value);
+    getChartData(e.value);
 };
 
 watch(
@@ -456,7 +347,10 @@ watch(
                 </Button>
             </div>
         </div>
-        <div class="col-12 xl:col-4">
+        <div class="col-6 xl:col-2">
+            <Dropdown v-model="selectedServer" @change="serverChange" :options="serverList" optionValue="id" optionLabel="name" placeholder="选择一个服务器IP" class="w-full md:w-14rem" />
+        </div>
+        <div class="col-6 xl:col-2">
             <Calendar dateFormat="yy/mm/dd" selectionMode="range" :manualInput="false" v-model="time" showIcon />
         </div>
         <div class="col-12 xl:col-2-5">
@@ -470,8 +364,6 @@ watch(
                         <i class="pi pi-user-plus text-blue-500 text-xl"></i>
                     </div>
                 </div>
-                <!-- <span class="text-green-500 font-medium">24 new </span>
-                <span class="text-500">since last visit</span> -->
             </div>
         </div>
         <div class="col-12 xl:col-2-5">

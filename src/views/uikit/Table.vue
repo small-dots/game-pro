@@ -15,6 +15,10 @@ const modalinfo = reactive({
     bt: '',
     type: '2'
 });
+const typeList = ref([
+    { name: '邮件', id: 1 },
+    { name: '公告', id: 2 }
+]);
 const total = ref(0);
 
 const submit = () => {
@@ -34,13 +38,13 @@ const submit = () => {
 };
 
 const del = (row) => {
-    productService.deleteNotice({ id: row.id }).then(res=>{
-        console.log(res)
-        if(res==0){
-             toast.add({ severity: 'success', summary: '提示', detail: '删除成功', group: 'tl', life: 3000 });
-             initTableData();
+    productService.deleteNotice({ id: row.id }).then((res) => {
+        console.log(res);
+        if (res == 0) {
+            toast.add({ severity: 'success', summary: '提示', detail: '删除成功', group: 'tl', life: 3000 });
+            initTableData();
         }
-    })
+    });
 };
 
 const reset = () => {
@@ -84,7 +88,12 @@ onBeforeMount(() => {
                         </div>
                     </template>
                     <Column field="bt" header="公告标题" :style="{ width: '300px' }" frozen></Column>
-                    <Column field="ggnr" header="公告内容"></Column>
+                    <Column field="type" header="类型">
+                        <template #body="{ data }">
+                            <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ data.type == '1' ? '邮件' : '公告' }}</span>
+                        </template></Column
+                    >
+                    <Column field="ggnr" header="公告内容F"></Column>
                     <Column field="gqsj" header="过期时间" :style="{ width: '200px' }">
                         <template #body="{ data }">
                             <span style="margin-left: 0.5em; vertical-align: middle" class="image-text">{{ $moment(data.gqsj).format('YYYY-MM-DD HH:mm:ss') }}</span>
@@ -104,6 +113,10 @@ onBeforeMount(() => {
             <div class="field col-12">
                 <label for="firstname2">公告标题</label>
                 <InputText id="firstname2" v-model="modalinfo.bt" type="text" />
+            </div>
+            <div class="field col-12">
+                <label for="firstname2">类型</label>
+                <Dropdown style="width: 100% !important" v-model="modalinfo.type" :options="typeList" optionValue="id" optionLabel="name" placeholder="选择类型" class="w-full md:w-14rem" />
             </div>
             <div class="field col-12">
                 <label for="lastname2">过期时间</label>

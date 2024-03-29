@@ -148,6 +148,12 @@ const send = () => {
         toast.add({ severity: 'error', summary: '提示', detail: '过期时间必输', group: 'tl', life: 3000 });
         return;
     }
+    productService.sendEmail({ ...content }).then((res) => {
+        console.log(res);
+        if (res == 0) {
+            toast.add({ severity: 'success', summary: '提示', detail: '邮件发送成功', group: 'tl', life: 3000 });
+        }
+    });
 };
 </script>
 
